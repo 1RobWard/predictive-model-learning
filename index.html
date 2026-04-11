@@ -109,6 +109,26 @@ button:hover{filter:brightness(1.08)}
 input[type=range]{width:100%;height:6px;-webkit-appearance:none;background:var(--lgrey);border-radius:3px;outline:none}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--teal);cursor:pointer;border:2px solid var(--white);box-shadow:0 1px 4px rgba(0,0,0,.2)}
 
+/* Login */
+.login-wrap{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:var(--soil);padding:24px}
+.login-card{background:var(--white);border-radius:16px;padding:40px 36px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-card h2{font-size:22px;font-weight:800;color:var(--soil);margin-bottom:4px}
+.login-card p{font-size:13px;color:var(--grey);margin-bottom:24px}
+.login-field{display:block;width:100%;padding:12px 14px;border:2px solid var(--lgrey);border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:12px;outline:none;transition:border-color .2s}
+.login-field:focus{border-color:var(--teal)}
+.login-btn{width:100%;padding:14px;background:var(--teal);color:var(--white);border:none;border-radius:8px;font-size:15px;font-weight:700;margin-top:8px}
+.login-btn:disabled{opacity:.5;cursor:not-allowed}
+.user-badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border-radius:8px;padding:6px 12px;font-size:11px;color:rgba(255,255,255,.7)}
+.user-badge a{color:var(--amber);text-decoration:none;font-size:10px;margin-left:4px}
+
+/* Hint & Help */
+.hint-help-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn-hint{background:transparent;border:1px solid var(--amber);color:var(--amber);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600}
+.btn-help{background:transparent;border:1px solid var(--berry);color:var(--berry);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600}
+.hint-box{background:#fff8e8;border:1px solid var(--amber);border-radius:6px;padding:10px 12px;margin-top:8px;font-size:12px;color:#8B6914;line-height:1.5}
+.help-box{background:rgba(139,39,131,.06);border:1px solid var(--berry);border-radius:6px;padding:10px 12px;margin-top:8px;font-size:12px;color:#6b1a64;line-height:1.5}
+.help-tag{display:inline-block;background:var(--berry);color:var(--white);font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;margin-left:6px;vertical-align:middle}
+
 /* Animations */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -122,8 +142,24 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 // ─── COLOUR PALETTE ────────────────────────────────────────────
 const C={soil:"#1c1510",teal:"#2a9d8f",tealDk:"#1f7268",berry:"#8B2783",lime:"#9FB04F",amber:"#e9a84c",cream:"#faf7f2",parch:"#f5f0e8",white:"#ffffff",grey:"#6b7280",lgrey:"#e5e7eb",red:"#e74c3c"};
 
+// ─── GOOGLE APPS SCRIPT ENDPOINT ──────────────────────────────
+// Replace this URL after deploying your Apps Script (see setup instructions at bottom of file)
+const SHEET_URL="";
+
+function trackEvent(data){
+  if(!SHEET_URL||!state.user)return;
+  const payload={...data,firstName:state.user.firstName,lastName:state.user.lastName,email:state.user.email,timestamp:new Date().toISOString()};
+  fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).catch(()=>{});
+}
+
 // ─── STATE ─────────────────────────────────────────────────────
-const state={view:"home",currentModuleId:null,currentSection:0,quizMode:false,quizAnswers:{},submitted:false,completed:JSON.parse(localStorage.getItem('vpm_completed')||'[]')};
+const state={
+  view:localStorage.getItem('vpm_user')?"home":"login",
+  user:JSON.parse(localStorage.getItem('vpm_user')||'null'),
+  currentModuleId:null,currentSection:0,quizMode:false,
+  quizAnswers:{},hints:{},helps:{},submitted:false,
+  completed:JSON.parse(localStorage.getItem('vpm_completed')||'[]')
+};
 function saveCompleted(){localStorage.setItem('vpm_completed',JSON.stringify(state.completed))}
 
 // ─── VISUAL RENDERERS ──────────────────────────────────────────
@@ -718,11 +754,11 @@ const modules=[
     {heading:"Why Vitagri Needs Two Models",visual:"inline2",
      body:"Together, the two models create a closed verification loop: the forward model predicts which farms should produce nutrient-dense food based on their practices, while the reverse model checks whether the food from those farms actually carries the biological signatures of those farming practices. This bidirectional validation is what makes Vitagri\u2019s certification audit-grade rather than self-reported."},
   ],quiz:[
-    {q:"What does a predictive model do with inputs it has NEVER seen before?",options:["Returns an error message","Looks up the answer in a database","Generalises from learned patterns to make a prediction","Asks the farmer to provide historical data"],correct:2},
-    {q:"In the equation: Iron = 1.12 \u00d7 SOM + 12.5, what does 1.12 represent?",options:["The average iron content of all farms","How much iron increases per 1% rise in soil organic matter","The maximum possible iron content","The intercept of the model"],correct:1},
-    {q:"What is the MAIN purpose of Vitagri's reverse model?",options:["To predict crop yield from weather data","To infer farming practices from food biomarkers \u2014 verification","To replace the forward model when data is missing","To train the XGBoost algorithm"],correct:1},
-    {q:"A farm has soil organic matter of 5%. Using: Iron = 1.12 \u00d7 SOM + 12.5, what is the predicted iron?",options:["18.1 mg/100g","17.6 mg/100g","12.5 mg/100g","5.6 mg/100g"],correct:0},
-    {q:"Which best describes what makes Vitagri's certification 'audit-grade'?",options:["It uses a very large dataset","It is reviewed by a government body","The forward and reverse models together create a closed verification loop","It only uses organic farms"],correct:2},
+    {q:"What does a predictive model do with inputs it has NEVER seen before?",options:["Returns an error message","Looks up the answer in a database","Generalises from learned patterns to make a prediction","Asks the farmer to provide historical data"],correct:2,hint:"Think about how a model differs from a simple lookup table.",explanation:"A predictive model generalises from patterns learned during training. Unlike a database lookup, it can produce predictions for entirely new inputs by applying the mathematical relationships it has discovered."},
+    {q:"In the equation: Iron = 1.12 \u00d7 SOM + 12.5, what does 1.12 represent?",options:["The average iron content of all farms","How much iron increases per 1% rise in soil organic matter","The maximum possible iron content","The intercept of the model"],correct:1,hint:"The number multiplying SOM is called a coefficient \u2014 what does it tell you about the relationship?",explanation:"The coefficient 1.12 means that for every 1 percentage point increase in soil organic matter, the model predicts iron content rises by 1.12 mg/100g. It quantifies the strength and direction of the relationship."},
+    {q:"What is the MAIN purpose of Vitagri's reverse model?",options:["To predict crop yield from weather data","To infer farming practices from food biomarkers \u2014 verification","To replace the forward model when data is missing","To train the XGBoost algorithm"],correct:1,hint:"The reverse model works backwards \u2014 from the food to the farm. Why would you want to do that?",explanation:"The reverse model takes biological markers from a food sample and infers what farming system produced it. This enables independent verification of farming practice claims \u2014 a food\u2019s biology cannot easily be faked."},
+    {q:"A farm has soil organic matter of 5%. Using: Iron = 1.12 \u00d7 SOM + 12.5, what is the predicted iron?",options:["18.1 mg/100g","17.6 mg/100g","12.5 mg/100g","5.6 mg/100g"],correct:0,hint:"Substitute 5 into the equation: 1.12 \u00d7 5 + 12.5 = ?",explanation:"Iron = 1.12 \u00d7 5 + 12.5 = 5.6 + 12.5 = 18.1 mg/100g. You multiply the coefficient by the input value and add the intercept."},
+    {q:"Which best describes what makes Vitagri's certification 'audit-grade'?",options:["It uses a very large dataset","It is reviewed by a government body","The forward and reverse models together create a closed verification loop","It only uses organic farms"],correct:2,hint:"Think about what happens when two models check each other\u2019s work.",explanation:"The forward model predicts food quality from farming practices, while the reverse model verifies those practice claims from the food\u2019s biology. Together they create a closed loop where each direction validates the other \u2014 making the system far harder to game than either model alone."},
   ]},
   {id:2,title:"The Data We Work With",icon:"\ud83d\udcca",sections:[
     {heading:"Types of Variables in the Vitagri Dataset",visual:"vartypes",
@@ -732,11 +768,11 @@ const modules=[
     {heading:"Data Quality \u2014 Garbage In, Garbage Out",visual:"inline3",
      body:"Every real dataset has problems. Professional data scientists spend 50\u201380% of their time on data cleaning and quality assurance \u2014 not building models. Vitagri\u2019s data collection protocol is designed to minimise issues at source (standardised survey instruments, automated range checks, duplicate entry for critical measurements) but post-collection cleaning remains essential before any model is fitted."},
   ],quiz:[
-    {q:"Tillage method (no-till / min-till / conventional) is what type of variable?",options:["Continuous","Binary","Categorical","Ordinal"],correct:2},
-    {q:"Which data stream provides the 'ground truth' nutrient measurement?",options:["Farming practices","Soil health data","Microbial profiles","Metabolomics"],correct:3},
-    {q:"Farm 8 records soil pH as 13.1. What is the most appropriate first response?",options:["Accept it \u2014 unusual farms exist","Delete the farm from the dataset","Flag for manual review \u2014 likely a data entry error","Replace with the mean pH"],correct:2},
-    {q:"You have 28 conventional farms and only 2 organic farms. This is called:",options:["Missing data","Class imbalance","An outlier","A random effect"],correct:1},
-    {q:"What does 'dummy encoding' do to a categorical variable?",options:["Converts it to a decimal number","Splits it into multiple binary (0/1) columns","Removes it from the analysis","Calculates its correlation"],correct:1},
+    {q:"Tillage method (no-till / min-till / conventional) is what type of variable?",options:["Continuous","Binary","Categorical","Ordinal"],correct:2,hint:"How many named groups does tillage have? Is there a natural numeric order?",explanation:"Tillage method has three named categories with no inherent numeric order \u2014 you cannot say conventional is \u2018more\u2019 than no-till in a meaningful numeric sense. This makes it categorical, requiring dummy encoding before use in models."},
+    {q:"Which data stream provides the 'ground truth' nutrient measurement?",options:["Farming practices","Soil health data","Microbial profiles","Metabolomics"],correct:3,hint:"Which stream directly measures what is in the food itself?",explanation:"Metabolomics is the chemical analysis of the food \u2014 it directly measures nutrient and metabolite concentrations. The other streams measure the farming environment. Metabolomics provides the ground truth outcome that all predictions are validated against."},
+    {q:"Farm 8 records soil pH as 13.1. What is the most appropriate first response?",options:["Accept it \u2014 unusual farms exist","Delete the farm from the dataset","Flag for manual review \u2014 likely a data entry error","Replace with the mean pH"],correct:2,hint:"What is the realistic range of soil pH in UK agriculture?",explanation:"UK agricultural soils rarely exceed pH 8.5. A reading of 13.1 is almost certainly a data entry error (perhaps 6.31 or 1.31). The correct response is to flag it for manual review \u2014 not to silently delete or replace it, as the true value may be recoverable."},
+    {q:"You have 28 conventional farms and only 2 organic farms. This is called:",options:["Missing data","Class imbalance","An outlier","A random effect"],correct:1,hint:"When one category vastly outnumbers another in your training data, the model struggles to learn the minority class.",explanation:"Class imbalance occurs when the categories in your target variable are unevenly represented. With 28:2, the model may simply predict \u2018conventional\u2019 for everything and still appear 93% accurate. Techniques like SMOTE oversampling or class-weighted loss functions help address this."},
+    {q:"What does 'dummy encoding' do to a categorical variable?",options:["Converts it to a decimal number","Splits it into multiple binary (0/1) columns","Removes it from the analysis","Calculates its correlation"],correct:1,hint:"Models need numbers, not text labels. How do you represent three tillage types numerically?",explanation:"Dummy encoding creates a separate binary (0/1) column for each category. Tillage with three levels becomes two columns: \u2018is_min_till\u2019 and \u2018is_conventional\u2019 (no-till is the reference when both are 0). This lets the model treat each category independently."},
   ]},
   {id:3,title:"Statistics Foundations",icon:"\ud83d\udcd0",sections:[
     {heading:"Distributions \u2014 What Does Your Data Look Like?",visual:"bell",
@@ -746,11 +782,11 @@ const modules=[
     {heading:"Regression \u2014 The Foundation of Prediction",visual:"regression",
      body:"Regression finds the line (or surface in multiple dimensions) that best fits the observed data points. \u2018Best fit\u2019 means minimising the sum of squared residuals \u2014 the vertical distances between each data point and the line. Toggle the residuals button above to see these errors."},
   ],quiz:[
-    {q:"A right-skewed distribution of polyphenol values means:",options:["Most farms have very high polyphenols","Most farms have low polyphenols, with a few very high outliers","The data is normally distributed","The model cannot be applied"],correct:1},
-    {q:"A correlation of r = \u22120.78 between synthetic nitrogen and iron content means:",options:["Applying more nitrogen directly destroys iron","There is a strong positive relationship","Higher nitrogen rates are strongly associated with lower iron content","There is no meaningful relationship"],correct:2},
-    {q:"What are 'residuals' in a regression model?",options:["The variables excluded from the model","The difference between predicted and actual values","The coefficients assigned to each predictor","The training farms not used for fitting"],correct:1},
-    {q:"Correlation does not equal causation. Which example best illustrates this?",options:["Soil pH and iron have r=0.12","Cover crops correlate with high nutrients \u2014 but wealthier farms may both use cover crops AND have better soil history","Nitrogen and iron have r=\u22120.45 \u2014 proving nitrogen causes iron deficiency","Organic matter has r=+0.72 \u2014 proving it directly creates iron"],correct:1},
-    {q:"What does minimising 'sum of squared residuals' achieve?",options:["It removes outliers","It ensures all variables are used","It finds the line that best fits the data points","It standardises all variables"],correct:2},
+    {q:"A right-skewed distribution of polyphenol values means:",options:["Most farms have very high polyphenols","Most farms have low polyphenols, with a few very high outliers","The data is normally distributed","The model cannot be applied"],correct:1,hint:"In a right-skewed distribution, the long tail extends to the right (high values).",explanation:"Right-skewed means the bulk of observations cluster at lower values, with a long tail stretching towards high values. Most farms have modest polyphenol levels, but a few (likely low-input organic) produce exceptionally high concentrations, pulling the tail rightward."},
+    {q:"A correlation of r = \u22120.78 between synthetic nitrogen and iron content means:",options:["Applying more nitrogen directly destroys iron","There is a strong positive relationship","Higher nitrogen rates are strongly associated with lower iron content","There is no meaningful relationship"],correct:2,hint:"The sign tells you the direction, the magnitude tells you the strength. r = \u22120.78 is close to \u22121.",explanation:"r = \u22120.78 indicates a strong negative association: as synthetic nitrogen increases, iron content tends to decrease substantially. However, correlation does not prove causation \u2014 it shows the association is strong and consistent, not that nitrogen directly destroys iron."},
+    {q:"What are 'residuals' in a regression model?",options:["The variables excluded from the model","The difference between predicted and actual values","The coefficients assigned to each predictor","The training farms not used for fitting"],correct:1,hint:"Residuals measure how far off the model\u2019s predictions are from reality.",explanation:"A residual is the vertical distance between an observed data point and the regression line\u2019s prediction for that point. Residual = actual value \u2212 predicted value. Good models have small, randomly distributed residuals with no systematic pattern."},
+    {q:"Correlation does not equal causation. Which example best illustrates this?",options:["Soil pH and iron have r=0.12","Cover crops correlate with high nutrients \u2014 but wealthier farms may both use cover crops AND have better soil history","Nitrogen and iron have r=\u22120.45 \u2014 proving nitrogen causes iron deficiency","Organic matter has r=+0.72 \u2014 proving it directly creates iron"],correct:1,hint:"Look for a confounding variable \u2014 a hidden third factor that could explain both the practice and the outcome.",explanation:"Wealthier farms can afford cover crops AND may have invested in better soil management over decades. The correlation between cover crops and nutrients might partly reflect wealth/soil history rather than cover crops alone. This confounding variable makes causal claims from observational data unreliable without controlled experiments."},
+    {q:"What does minimising 'sum of squared residuals' achieve?",options:["It removes outliers","It ensures all variables are used","It finds the line that best fits the data points","It standardises all variables"],correct:2,hint:"The regression line is positioned to make the total squared prediction error as small as possible.",explanation:"Ordinary least squares regression finds the line (or hyperplane) that minimises the sum of squared differences between predictions and actual values. Squaring ensures positive and negative errors don\u2019t cancel out, and penalises large errors more than small ones."},
   ]},
   {id:4,title:"Introduction to Machine Learning",icon:"\ud83e\udd16",sections:[
     {heading:"Supervised vs Unsupervised Learning",visual:"inline4",
@@ -760,11 +796,11 @@ const modules=[
     {heading:"Overfitting and Feature Scaling",visual:"overfit",
      body:"Overfitting occurs when a model learns the training data so thoroughly that it memorises noise rather than genuine patterns. With 30 farms and potentially 50+ variables, overfitting is a major risk. Solutions include regularisation, cross-validation, and feature selection."},
   ],quiz:[
-    {q:"Vitagri's forward model (practices \u2192 nutrient prediction) is an example of:",options:["Unsupervised learning","Reinforcement learning","Supervised learning","Transfer learning"],correct:2},
-    {q:"Why is the test set only used ONCE?",options:["It takes too long otherwise","Using it multiple times would cause overfitting to the test set itself","It must be reserved for GLMM not XGBoost","Government regulations require this"],correct:1},
-    {q:"K-fold cross-validation with 5 folds on 30 farms means:",options:["Each fold trains on 5 farms and validates on 25","Each round validates on 6 farms while training on the other 24","The test set is split into 5 equal parts","The model is trained 5 times on the full dataset"],correct:1},
-    {q:"A model achieves R\u00b2=0.98 on training but R\u00b2=0.54 on validation. This is:",options:["Excellent generalisation","Normal variance","Underfitting","Overfitting"],correct:3},
-    {q:"Feature scaling is needed because:",options:["It improves interpretability","Variables in different units would otherwise have unequal influence based purely on scale","The GLMM requires it mathematically","Scaling reduces trees needed"],correct:1},
+    {q:"Vitagri's forward model (practices \u2192 nutrient prediction) is an example of:",options:["Unsupervised learning","Reinforcement learning","Supervised learning","Transfer learning"],correct:2,hint:"Does Vitagri provide labelled examples (input + correct answer) during training?",explanation:"Supervised learning uses labelled data where both inputs (farming practices) and correct outputs (measured nutrients) are known. The model learns the mapping between them. Unsupervised learning has no labels \u2014 it only discovers hidden structure."},
+    {q:"Why is the test set only used ONCE?",options:["It takes too long otherwise","Using it multiple times would cause overfitting to the test set itself","It must be reserved for GLMM not XGBoost","Government regulations require this"],correct:1,hint:"If you keep checking your answers against the test set and adjusting, is it still a fair test?",explanation:"If you repeatedly evaluate on the test set and tweak your model based on the results, you are effectively training on the test set. It ceases to be an independent measure of real-world performance. The test set must remain untouched until the final evaluation to give an honest estimate."},
+    {q:"K-fold cross-validation with 5 folds on 30 farms means:",options:["Each fold trains on 5 farms and validates on 25","Each round validates on 6 farms while training on the other 24","The test set is split into 5 equal parts","The model is trained 5 times on the full dataset"],correct:1,hint:"30 farms \u00f7 5 folds = how many farms per fold? One fold validates, the rest train.",explanation:"With 5 folds and 30 farms, each fold contains 6 farms. In each round, one fold (6 farms) is held out for validation while the remaining 24 train the model. After 5 rounds, every farm has been validated exactly once. The average of all 5 scores gives a robust performance estimate."},
+    {q:"A model achieves R\u00b2=0.98 on training but R\u00b2=0.54 on validation. This is:",options:["Excellent generalisation","Normal variance","Underfitting","Overfitting"],correct:3,hint:"Look at the gap between training and validation performance. A huge gap means the model learned something specific to the training data.",explanation:"The enormous gap (0.98 vs 0.54) is the classic signature of overfitting. The model has memorised the training data\u2019s quirks rather than learning generalisable patterns. It performs brilliantly on data it has seen but poorly on new farms."},
+    {q:"Feature scaling is needed because:",options:["It improves interpretability","Variables in different units would otherwise have unequal influence based purely on scale","The GLMM requires it mathematically","Scaling reduces trees needed"],correct:1,hint:"Nitrogen is measured in hundreds of kg/ha while pH is measured in single digits. Which would dominate a distance calculation?",explanation:"Without scaling, variables measured in large units (e.g. nitrogen at 0\u2013200 kg/ha) would dominate algorithms that use distances or gradients, simply because their numeric range is larger \u2014 not because they are more important. Scaling to a common range (e.g. 0\u20131 or z-scores) ensures fair treatment."},
   ]},
   {id:5,title:"Generalised Linear Mixed Models",icon:"\ud83d\udcc9",sections:[
     {heading:"Building from Regression to GLMM",visual:"inline5",
@@ -774,11 +810,11 @@ const modules=[
     {heading:"Reading GLMM Output",visual:"output",
      body:"The model output table is your primary scientific report. Each row represents one fixed effect. The estimate tells you the direction and magnitude. The p-value tells you the probability of seeing an effect this large by chance if the true effect were zero."},
   ],quiz:[
-    {q:"Why can't Vitagri use standard multiple regression?",options:["Regression requires too many computers","Multiple samples from the same farm are correlated \u2014 not independent","Regression only works with binary outcomes","The dataset has too many continuous variables"],correct:1},
-    {q:"In a GLMM, what does the 'random effect' for each farm represent?",options:["A random sample of that farm's data","The farm's average nutrient density","Everything about that farm not captured by measured variables","The probability the farm is organic"],correct:2},
-    {q:"A fixed effect of +1.24 for 'Cover crop (yes)' means:",options:["Cover crops are used on 1.24% of farms","Farms with cover crops have 1.24 mg/100g more iron on average","Cover crop use increases yield by 1.24 tonnes","The p-value for cover crops is 1.24"],correct:1},
-    {q:"A GLMM shows p = 0.527 for soil pH. The best interpretation is:",options:["Soil pH definitely has no effect","This dataset does not provide sufficient evidence that pH affects iron","Soil pH increases iron by 52.7%","We should remove pH from all future models"],correct:1},
-    {q:"AIC is used in model selection. AIC = 312 vs AIC = 341 \u2014 which is better?",options:["312 \u2014 lower AIC indicates better trade-off between fit and complexity","341 \u2014 larger numbers indicate better fit","They are equally good","More information is needed"],correct:0},
+    {q:"Why can't Vitagri use standard multiple regression?",options:["Regression requires too many computers","Multiple samples from the same farm are correlated \u2014 not independent","Regression only works with binary outcomes","The dataset has too many continuous variables"],correct:1,hint:"Multiple soil samples come from the same field. Are they truly independent observations?",explanation:"Standard regression assumes every observation is independent. But Vitagri takes multiple samples per farm, and samples from the same farm share soil, climate, and management history \u2014 they are correlated. GLMM handles this by adding a random effect for each farm, properly accounting for the nested structure."},
+    {q:"In a GLMM, what does the 'random effect' for each farm represent?",options:["A random sample of that farm's data","The farm's average nutrient density","Everything about that farm not captured by measured variables","The probability the farm is organic"],correct:2,hint:"Fixed effects capture the measured variables. What captures the unmeasured farm-specific differences?",explanation:"The random effect for each farm captures all the unexplained, farm-specific variation that the measured fixed effects (tillage, nitrogen, etc.) cannot account for \u2014 things like unique microclimate, drainage, field history, and management nuances that are not in the dataset."},
+    {q:"A fixed effect of +1.24 for 'Cover crop (yes)' means:",options:["Cover crops are used on 1.24% of farms","Farms with cover crops have 1.24 mg/100g more iron on average","Cover crop use increases yield by 1.24 tonnes","The p-value for cover crops is 1.24"],correct:1,hint:"Fixed effect estimates tell you the average change in the outcome associated with that variable.",explanation:"The estimate +1.24 means that, on average across all farms in the study, farms using cover crops are predicted to have 1.24 mg/100g more iron than farms without cover crops, after controlling for all other variables in the model."},
+    {q:"A GLMM shows p = 0.527 for soil pH. The best interpretation is:",options:["Soil pH definitely has no effect","This dataset does not provide sufficient evidence that pH affects iron","Soil pH increases iron by 52.7%","We should remove pH from all future models"],correct:1,hint:"A high p-value means the observed effect could easily have arisen by chance. But absence of evidence is not evidence of absence.",explanation:"p = 0.527 means there is a 52.7% probability of seeing an effect this large by chance if pH truly had no effect. This is far above the 0.05 threshold \u2014 so we cannot claim pH affects iron. However, with only 30 farms we may lack the statistical power to detect a real but small effect. It does not prove pH is irrelevant."},
+    {q:"AIC is used in model selection. AIC = 312 vs AIC = 341 \u2014 which is better?",options:["312 \u2014 lower AIC indicates better trade-off between fit and complexity","341 \u2014 larger numbers indicate better fit","They are equally good","More information is needed"],correct:0,hint:"AIC penalises both poor fit and excessive complexity. Think of it like a golf score.",explanation:"Lower AIC is better. AIC balances model fit (how well it explains the data) against complexity (how many parameters it uses). A model with AIC 312 achieves a better trade-off than one with 341 \u2014 it explains the data well without unnecessary complexity."},
   ]},
   {id:6,title:"Gradient Boosting & XGBoost",icon:"\u26a1",sections:[
     {heading:"Decision Trees \u2014 The Building Block",visual:"dtree",
@@ -788,11 +824,11 @@ const modules=[
     {heading:"Feature Importance and SHAP Values",visual:"shap",
      body:"SHAP values give a theoretically grounded, consistent measure of each feature\u2019s contribution to each individual prediction. For Vitagri, SHAP values allow us to tell a farmer exactly why their farm scored as it did. This per-farm explainability is essential for farmer trust and scientific credibility."},
   ],quiz:[
-    {q:"In a decision tree, what determines where each split is made?",options:["Random chance","The variable and threshold that best separates outcomes","The farmer's preference","The order variables appear in the dataset"],correct:1},
-    {q:"How does gradient boosting differ from a single tree?",options:["It uses larger datasets","It only works for classification","It builds trees sequentially, each correcting previous errors","It is less accurate but faster"],correct:2},
-    {q:"SHAP values allow Vitagri to:",options:["Speed up training","Explain to each farmer exactly why their score is what it is","Replace the GLMM entirely","Reduce the number of variables needed"],correct:1},
-    {q:"XGBoost includes regularisation to:",options:["Speed up computation","Prevent overfitting by penalising complexity","Improve data collection","Handle missing values"],correct:1},
-    {q:"SOM has SHAP importance 0.28, nitrogen rate 0.10. This means:",options:["SOM should be removed","Nitrogen rate has no effect","SOM contributes 2.8\u00d7 more to predictions","The model is overfitting to SOM"],correct:2},
+    {q:"In a decision tree, what determines where each split is made?",options:["Random chance","The variable and threshold that best separates outcomes","The farmer's preference","The order variables appear in the dataset"],correct:1,hint:"At each node, the algorithm tests every possible variable and threshold to find the one that creates the most homogeneous groups.",explanation:"The algorithm evaluates all possible splits across all variables and selects the one that best separates high-nutrient from low-nutrient farms (measured by information gain or Gini impurity). The process is entirely data-driven, not random."},
+    {q:"How does gradient boosting differ from a single tree?",options:["It uses larger datasets","It only works for classification","It builds trees sequentially, each correcting previous errors","It is less accurate but faster"],correct:2,hint:"Each new tree in the sequence focuses on the mistakes the previous trees made.",explanation:"Gradient boosting builds trees one after another. Tree 1 makes rough predictions. Tree 2 is trained on Tree 1\u2019s errors (residuals). Tree 3 corrects what Tree 2 missed, and so on. The final prediction is the sum of all trees \u2014 far more accurate and stable than any single tree."},
+    {q:"SHAP values allow Vitagri to:",options:["Speed up training","Explain to each farmer exactly why their score is what it is","Replace the GLMM entirely","Reduce the number of variables needed"],correct:1,hint:"SHAP decomposes each individual prediction into the contribution of each input variable.",explanation:"SHAP (SHapley Additive exPlanations) assigns each input variable a contribution to each individual prediction. Vitagri can tell a farmer: \u2018Your iron score is above average because of your high SOM (+1.2) and cover crops (+0.6), partially offset by your nitrogen rate (\u22120.4).\u2019 This transparency builds trust."},
+    {q:"XGBoost includes regularisation to:",options:["Speed up computation","Prevent overfitting by penalising complexity","Improve data collection","Handle missing values"],correct:1,hint:"With 30 farms and many variables, an unconstrained model would memorise the training data. What prevents that?",explanation:"Regularisation adds a penalty term that discourages overly complex models. L1 (alpha) encourages sparse feature selection; L2 (lambda) shrinks coefficients towards zero. This prevents the model from memorising training data noise, especially critical with only 30 farms."},
+    {q:"SOM has SHAP importance 0.28, nitrogen rate 0.10. This means:",options:["SOM should be removed","Nitrogen rate has no effect","SOM contributes 2.8\u00d7 more to predictions","The model is overfitting to SOM"],correct:2,hint:"SHAP importance is proportional \u2014 compare the two numbers as a ratio.",explanation:"SHAP importance of 0.28 vs 0.10 means soil organic matter contributes 2.8 times more to the model\u2019s predictions than nitrogen rate (0.28 \u00f7 0.10 = 2.8). Both variables matter, but SOM is the dominant driver of nutrient density predictions in this model."},
   ]},
   {id:7,title:"Metabolomics & Microbial Data",icon:"\ud83e\udda0",sections:[
     {heading:"The Curse of Dimensionality \u2014 800 Metabolites, 30 Farms",visual:"pca",
@@ -802,11 +838,11 @@ const modules=[
     {heading:"Diversity Metrics \u2014 Alpha and Beta Diversity",visual:"inline6",
      body:"Alpha diversity is a key predictor variable in Vitagri\u2019s model: farms with higher microbial diversity consistently show stronger nutrient density profiles. Beta diversity is used for clustering and identifying farm groupings."},
   ],quiz:[
-    {q:"Why can't Vitagri use all 800 metabolite peaks directly?",options:["Equipment cannot measure 800 peaks","With 30 farms and 800 variables, the model would severely overfit","Metabolites are not related to farming","The GLMM cannot handle more than 50 variables"],correct:1},
-    {q:"What does CLR transformation correct for?",options:["Non-normal distribution of soil variables","Spurious correlations from compositional data summing to 100%","Outliers in nitrogen rate","The nested structure of samples"],correct:1},
-    {q:"A farm has Shannon alpha diversity = 3.9 vs another with 1.1. This indicates:",options:["3.9\u00d7 more bacteria","Much more diverse and evenly distributed community","Poor soil health","Shannon index is not relevant"],correct:1},
-    {q:"PCA on 800 metabolites producing 15 components captures 87%. What happened to the remaining 13%?",options:["Added to GLMM as correction","Classified as noise and discarded","Stored in components 16\u2013800","Represents farming practice variation"],correct:1},
-    {q:"Bray-Curtis dissimilarity of 0.82 between two farms means:",options:["They share 82% of species","Their microbial communities are very different","Both have high alpha diversity","They are 0.82 km apart"],correct:1},
+    {q:"Why can't Vitagri use all 800 metabolite peaks directly?",options:["Equipment cannot measure 800 peaks","With 30 farms and 800 variables, the model would severely overfit","Metabolites are not related to farming","The GLMM cannot handle more than 50 variables"],correct:1,hint:"Compare the number of variables (800) to the number of observations (30 farms). What happens when variables exceed observations?",explanation:"With 800 variables and only 30 farms, the model has far more parameters than data points. It would find spurious patterns that perfectly fit the training data but fail completely on new farms \u2014 severe overfitting. PCA compresses the 800 into ~15 independent components first."},
+    {q:"What does CLR transformation correct for?",options:["Non-normal distribution of soil variables","Spurious correlations from compositional data summing to 100%","Outliers in nitrogen rate","The nested structure of samples"],correct:1,hint:"If all microbial abundances must sum to 100%, what happens mathematically when one species increases?",explanation:"Compositional data (relative abundances summing to 100%) creates artificial negative correlations: if Bacteria A increases, others must decrease to maintain the sum. CLR (Centred Log-Ratio) transformation removes this constraint by converting to log-ratios relative to the geometric mean, allowing valid statistical analysis."},
+    {q:"A farm has Shannon alpha diversity = 3.9 vs another with 1.1. This indicates:",options:["3.9\u00d7 more bacteria","Much more diverse and evenly distributed community","Poor soil health","Shannon index is not relevant"],correct:1,hint:"Shannon index accounts for both the number of species and how evenly they are distributed.",explanation:"A Shannon index of 3.9 indicates a highly diverse community with many species present in relatively even proportions. A score of 1.1 suggests dominance by a few species. Higher microbial diversity is consistently associated with healthier soils and more nutrient-dense food in the literature."},
+    {q:"PCA on 800 metabolites producing 15 components captures 87%. What happened to the remaining 13%?",options:["Added to GLMM as correction","Classified as noise and discarded","Stored in components 16\u2013800","Represents farming practice variation"],correct:1,hint:"PCA ranks components by how much variation they explain. The later components capture less and less meaningful signal.",explanation:"The remaining 13% of variance resides in components 16\u2013800, but these capture progressively less information and more noise. By keeping only the first 15 components (87% of variance), we retain the meaningful biological signal while discarding the noise that would cause overfitting."},
+    {q:"Bray-Curtis dissimilarity of 0.82 between two farms means:",options:["They share 82% of species","Their microbial communities are very different","Both have high alpha diversity","They are 0.82 km apart"],correct:1,hint:"Bray-Curtis ranges from 0 (identical communities) to 1 (completely different). Where does 0.82 fall?",explanation:"Bray-Curtis dissimilarity of 0.82 (on a 0\u20131 scale) means the two farms share very few microbial species in common \u2014 their communities are 82% different. This is a beta diversity metric comparing composition between sites, not within a single site."},
   ]},
   {id:8,title:"Model Evaluation & Validation",icon:"\u2705",sections:[
     {heading:"Regression Metrics \u2014 How Wrong Are We?",visual:"errors",
@@ -816,11 +852,11 @@ const modules=[
     {heading:"ROC Curves and Model Calibration",visual:"roc",
      body:"The ROC curve plots the trade-off between true positive rate and false positive rate across ALL possible thresholds. AUC=0.91 means in 91% of randomly selected pairs, the model correctly scores the high-nutrient farm higher. Calibration \u2014 whether probability scores mean what they claim \u2014 is equally important."},
   ],quiz:[
-    {q:"MAE = 0.4, RMSE = 1.1. What does the larger RMSE suggest?",options:["The model has more variables","A few farms have very large prediction errors","RMSE is always larger by a fixed amount","The model is underfitting"],correct:1},
-    {q:"Reducing the classification threshold from 0.7 to 0.3 will generally:",options:["Increase both precision and recall","Increase recall but reduce precision","Reduce recall but increase precision","Have no effect"],correct:1},
-    {q:"AUC of 0.91 means:",options:["91% of all farms correctly classified","In 91% of high-vs-low pairs, the model correctly ranks them","91% precision","9% false positive rate"],correct:1},
-    {q:"R\u00b2 = 0.78 means:",options:["78% of farms accurately certified","The model explains 78% of variation in iron content","78% of variables are significant","Errors of 0.78 mg/100g on average"],correct:1},
-    {q:"Model calibration refers to:",options:["Setting the optimal threshold","Whether probability scores accurately reflect true probabilities","Comparing against competitors","Removing poor variables"],correct:1},
+    {q:"MAE = 0.4, RMSE = 1.1. What does the larger RMSE suggest?",options:["The model has more variables","A few farms have very large prediction errors","RMSE is always larger by a fixed amount","The model is underfitting"],correct:1,hint:"RMSE squares errors before averaging, so large errors are amplified. If RMSE is much bigger than MAE, what does that tell you?",explanation:"MAE treats all errors equally, but RMSE squares them first \u2014 so a few large errors disproportionately inflate RMSE. The big gap (0.4 vs 1.1) means most predictions are close, but a small number of farms have very large errors pulling the RMSE up."},
+    {q:"Reducing the classification threshold from 0.7 to 0.3 will generally:",options:["Increase both precision and recall","Increase recall but reduce precision","Reduce recall but increase precision","Have no effect"],correct:1,hint:"A lower threshold means more farms are classified as \u2018positive\u2019. You catch more true positives, but also more false ones.",explanation:"Lowering the threshold means more farms exceed it and get classified as \u2018high nutrient\u2019. This catches more genuine high-nutrient farms (higher recall) but also incorrectly includes more low-nutrient farms (lower precision). This is the precision-recall trade-off."},
+    {q:"AUC of 0.91 means:",options:["91% of all farms correctly classified","In 91% of high-vs-low pairs, the model correctly ranks them","91% precision","9% false positive rate"],correct:1,hint:"AUC measures discriminative ability across all thresholds. Think of it as a ranking test.",explanation:"AUC = 0.91 means that if you randomly pick one high-nutrient farm and one low-nutrient farm, the model correctly assigns a higher score to the high-nutrient farm 91% of the time. It measures the model\u2019s ability to rank farms correctly, independent of any specific threshold."},
+    {q:"R\u00b2 = 0.78 means:",options:["78% of farms accurately certified","The model explains 78% of variation in iron content","78% of variables are significant","Errors of 0.78 mg/100g on average"],correct:1,hint:"R\u00b2 is the proportion of variance in the outcome variable that the model accounts for.",explanation:"R\u00b2 = 0.78 means the model explains 78% of the farm-to-farm variation in iron content. The remaining 22% is unexplained \u2014 due to variables not in the model, measurement noise, or genuine randomness. For complex biological systems, R\u00b2 > 0.70 is considered strong."},
+    {q:"Model calibration refers to:",options:["Setting the optimal threshold","Whether probability scores accurately reflect true probabilities","Comparing against competitors","Removing poor variables"],correct:1,hint:"If a model says \u201880% confident\u2019, how often should it actually be right?",explanation:"Calibration measures whether the model\u2019s probability outputs match real-world frequencies. A well-calibrated model that says \u201880% confident\u2019 should be correct 80% of the time for that group of predictions. Poorly calibrated models may be systematically overconfident or underconfident."},
   ]},
   {id:9,title:"The Bidirectional Architecture",icon:"\ud83d\udd04",sections:[
     {heading:"Full System Architecture",visual:"arch",
@@ -830,11 +866,11 @@ const modules=[
     {heading:"Confidence Scores \u2014 Probability into Decisions",visual:"gauge",
      body:"High confidence (\u226580%): issue certification. Borderline (60\u201380%): request additional samples. Low (<60%): certification withheld. All borderline and low scores are flagged for manual expert review."},
   ],quiz:[
-    {q:"What makes the continuous learning loop important?",options:["It reduces data collection cost","Each new certified farm adds labelled data that improves future accuracy","It allows the model to run without oversight","It enables offline operation"],correct:1},
-    {q:"C15:0 and C17:0 fatty acids are valuable biomarkers because:",options:["They can be tested cheaply","They are produced exclusively during ruminant digestion of living pasture \u2014 cannot be added artificially","They correlate with grain yield","They are the same as omega-3"],correct:1},
-    {q:"A confidence score of 68% triggers:",options:["Immediate certification","Request for additional samples or revisit next season","Permanent removal from programme","Automatic GLMM retraining"],correct:1},
-    {q:"The reverse model provides 'fraud-resistant' verification because:",options:["It uses blockchain","Biological markers arise from fundamental pathways that cannot be easily faked","It requires in-person inspection","Reverse models are more accurate"],correct:1},
-    {q:"The relationship between forward and reverse models is best described as:",options:["Identical algorithms run in opposite directions","Reverse only used when forward fails","Together they create a closed verification loop","Forward is more important for certification"],correct:2},
+    {q:"What makes the continuous learning loop important?",options:["It reduces data collection cost","Each new certified farm adds labelled data that improves future accuracy","It allows the model to run without oversight","It enables offline operation"],correct:1,hint:"What happens to the model as more farms are certified and their data is added to training?",explanation:"Every certified farm generates validated labelled data that can be used to retrain the model. More data means more patterns, better accuracy, and more credible certifications \u2014 which attracts more farms, creating a compounding virtuous cycle."},
+    {q:"C15:0 and C17:0 fatty acids are valuable biomarkers because:",options:["They can be tested cheaply","They are produced exclusively during ruminant digestion of living pasture \u2014 cannot be added artificially","They correlate with grain yield","They are the same as omega-3"],correct:1,hint:"Think about why these markers are fraud-resistant. Can a farmer supplement them into their products?",explanation:"C15:0 (pentadecanoic acid) and C17:0 (heptadecanoic acid) are odd-chain fatty acids synthesised exclusively by bacteria in the rumen of grazing animals eating fresh pasture. They cannot be supplemented, injected, or artificially added to meat or dairy \u2014 making them genuinely diagnostic of a pasture-based farming system."},
+    {q:"A confidence score of 68% triggers:",options:["Immediate certification","Request for additional samples or revisit next season","Permanent removal from programme","Automatic GLMM retraining"],correct:1,hint:"68% falls in the borderline zone (60\u201380%). What does Vitagri do when it\u2019s not confident enough?",explanation:"A 68% confidence score falls in Vitagri\u2019s borderline tier (60\u201380%). The evidence is suggestive but not conclusive. The response is to request additional food or soil samples, or revisit in the next growing season to gather more data \u2014 not to certify or reject outright."},
+    {q:"The reverse model provides 'fraud-resistant' verification because:",options:["It uses blockchain","Biological markers arise from fundamental pathways that cannot be easily faked","It requires in-person inspection","Reverse models are more accurate"],correct:1,hint:"The markers come from biochemical processes inside animals and soil ecosystems. Can they be manufactured?",explanation:"The biological markers used by the reverse model (odd-chain fatty acids, microbial diversity, polyphenol profiles) arise from fundamental biochemical pathways in living organisms. They cannot be artificially created, supplemented, or faked \u2014 they are the genuine biological fingerprint of the farming system."},
+    {q:"The relationship between forward and reverse models is best described as:",options:["Identical algorithms run in opposite directions","Reverse only used when forward fails","Together they create a closed verification loop","Forward is more important for certification"],correct:2,hint:"One model predicts food quality from practices. The other checks practices from food. What do they form together?",explanation:"The forward model predicts nutrient density from farming practices. The reverse model independently verifies those practice claims from the food\u2019s biology. Together they form a closed verification loop \u2014 each direction validates the other, making the certification system far more robust than either model alone."},
   ]},
   {id:10,title:"From Theory to Practice",icon:"\ud83d\ude80",sections:[
     {heading:"The 8-Phase Implementation Pipeline",visual:"pipeline",
@@ -844,11 +880,11 @@ const modules=[
     {heading:"Model Limitations and Honest Communication",visual:"inline9",
      body:"The Vitagri model is a decision-support tool, not an oracle. It makes probabilistic predictions based on patterns learned from a finite dataset. The virtuous data cycle is the key mechanism: more farms \u2192 more data \u2192 better model \u2192 more credible certifications \u2192 more farms join."},
   ],quiz:[
-    {q:"Why must the analysis plan be pre-registered BEFORE data collection?",options:["Regulatory requirements","To prevent unconscious adjustment of hypotheses after seeing data (p-hacking)","It speeds up peer review","It allows other researchers to contribute"],correct:1},
-    {q:"Cover crops are strongly associated with higher iron. The most accurate claim is:",options:["Cover crops cause higher iron","Cover crops are strongly associated with higher iron \u2014 causality would require controlled trials","Farmers using cover crops will definitely produce higher-iron food","The model proves the mechanism"],correct:1},
-    {q:"The 'virtuous data cycle' means:",options:["Data quality improves automatically","More farms \u2192 more data \u2192 better model \u2192 more credible certifications \u2192 more farms","The model retrains itself without new data","Farmers' data is returned after use"],correct:1},
-    {q:"A novel agroforestry farm scores 42% confidence. The most likely explanation is:",options:["Very poor nutrient density","The model is malfunctioning","The farm type is unlike anything in training data \u2014 insufficient evidence, not failure","Incomplete data collection"],correct:2},
-    {q:"Vitagri's model is best described as:",options:["A universal oracle for food quality","A decision-support tool with probabilistic predictions and quantified uncertainty","A replacement for laboratory analysis","A regulatory compliance tool"],correct:1},
+    {q:"Why must the analysis plan be pre-registered BEFORE data collection?",options:["Regulatory requirements","To prevent unconscious adjustment of hypotheses after seeing data (p-hacking)","It speeds up peer review","It allows other researchers to contribute"],correct:1,hint:"If you see the data first, you might unconsciously adjust your hypotheses to match what you found.",explanation:"Pre-registration publicly commits you to specific hypotheses and analysis methods before seeing the data. This prevents p-hacking \u2014 the unconscious (or conscious) adjustment of methods after seeing results to produce statistically significant findings. Leading journals now require or strongly encourage pre-registration."},
+    {q:"Cover crops are strongly associated with higher iron. The most accurate claim is:",options:["Cover crops cause higher iron","Cover crops are strongly associated with higher iron \u2014 causality would require controlled trials","Farmers using cover crops will definitely produce higher-iron food","The model proves the mechanism"],correct:1,hint:"Observational data shows associations. What type of study would you need for causal proof?",explanation:"Vitagri\u2019s model is observational \u2014 it identifies strong associations between practices and outcomes but cannot prove causation. Confounding variables (farm wealth, soil history, management skill) may partly explain the relationship. Only randomised controlled trials could establish causality definitively."},
+    {q:"The 'virtuous data cycle' means:",options:["Data quality improves automatically","More farms \u2192 more data \u2192 better model \u2192 more credible certifications \u2192 more farms","The model retrains itself without new data","Farmers' data is returned after use"],correct:1,hint:"Think about what happens as the platform grows \u2014 each new farm adds data, which improves the model, which attracts more farms.",explanation:"The virtuous cycle is a compounding feedback loop: each new certified farm adds validated training data, which makes the model more accurate, which makes certifications more credible, which attracts more farms to join \u2014 generating even more data. This is why early data quality investment is so critical."},
+    {q:"A novel agroforestry farm scores 42% confidence. The most likely explanation is:",options:["Very poor nutrient density","The model is malfunctioning","The farm type is unlike anything in training data \u2014 insufficient evidence, not failure","Incomplete data collection"],correct:2,hint:"The model was trained on 30 conventional, organic, and mixed farms. Has it ever seen an agroforestry system?",explanation:"A 42% confidence score for a novel farm type most likely reflects insufficient training data for that category. The model has never seen agroforestry \u2014 it lacks examples to learn from. This is a limitation of the training set, not a judgement on the farm\u2019s quality. As more diverse farms join the platform, the model\u2019s coverage improves."},
+    {q:"Vitagri's model is best described as:",options:["A universal oracle for food quality","A decision-support tool with probabilistic predictions and quantified uncertainty","A replacement for laboratory analysis","A regulatory compliance tool"],correct:1,hint:"The model gives probabilities and confidence scores, not definitive answers. What type of tool works that way?",explanation:"Vitagri\u2019s model is a decision-support tool \u2014 it provides probabilistic predictions with explicit uncertainty quantification (confidence scores). It assists human decision-making rather than replacing it. It complements, not replaces, laboratory analysis and does not claim universal applicability across all regions and farm types."},
   ]},
 ];
 
@@ -911,9 +947,38 @@ function renderInlineVisual(key,el){
 // ─── RENDER ENGINE ─────────────────────────────────────────────
 function render(){
   const app=document.getElementById('app');
-  if(state.view==="home") renderHome(app);
+  if(state.view==="login") renderLogin(app);
+  else if(state.view==="home") renderHome(app);
   else if(state.view==="study"&&!state.quizMode) renderStudy(app);
   else if(state.view==="study"&&state.quizMode) renderQuiz(app);
+}
+
+function renderLogin(app){
+  app.innerHTML=`
+    <div class="login-wrap">
+      <div class="login-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <div style="width:40px;height:40px;border-radius:8px;background:${C.teal};display:flex;align-items:center;justify-content:center;font-size:20px">\ud83c\udf31</div>
+          <div><div style="color:${C.amber};font-weight:800;font-size:18px">Vitagri</div><div style="font-size:10px;color:${C.grey};letter-spacing:1.5px;text-transform:uppercase">Predictive Model Learning</div></div>
+        </div>
+        <h2>Welcome</h2>
+        <p>Enter your details to start learning. Your progress will be tracked.</p>
+        <input type="text" id="login-first" class="login-field" placeholder="First name" autocomplete="given-name">
+        <input type="text" id="login-last" class="login-field" placeholder="Last name" autocomplete="family-name">
+        <input type="email" id="login-email" class="login-field" placeholder="Email address" autocomplete="email">
+        <button class="login-btn" id="login-btn" disabled>Start Learning \u2192</button>
+        <div style="font-size:10px;color:${C.grey};margin-top:12px;text-align:center">Your name and email are stored locally and sent to the team tracking sheet.</div>
+      </div>
+    </div>`;
+  const first=document.getElementById('login-first'),last=document.getElementById('login-last'),email=document.getElementById('login-email'),btn=document.getElementById('login-btn');
+  const check=()=>{btn.disabled=!(first.value.trim()&&last.value.trim()&&email.value.includes('@'))};
+  [first,last,email].forEach(f=>f.addEventListener('input',check));
+  btn.addEventListener('click',()=>{
+    state.user={firstName:first.value.trim(),lastName:last.value.trim(),email:email.value.trim()};
+    localStorage.setItem('vpm_user',JSON.stringify(state.user));
+    trackEvent({event:"login"});
+    state.view="home";render();
+  });
 }
 
 function renderHome(app){
@@ -921,10 +986,14 @@ function renderHome(app){
   app.innerHTML=`
     <div class="site-header"><div class="container">
       <div class="logo"><div class="logo-icon">\ud83c\udf31</div><div class="logo-text"><h1>Vitagri</h1><p>Predictive Model Learning System</p></div></div>
-      <div class="subtitle">10 visual modules from novice to expert \u2014 complete each quiz at 80%+ to unlock the next</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <div class="subtitle" style="margin-bottom:0">10 visual modules from novice to expert \u2014 complete each quiz at 80%+ to unlock the next</div>
+        ${state.user?`<div class="user-badge">\ud83d\udc64 ${state.user.firstName} ${state.user.lastName}<a href="#" id="logout">Log out</a></div>`:""}
+      </div>
       <div class="progress-box"><div class="progress-row"><span class="progress-label">Overall Progress</span><span class="progress-count">${state.completed.length}/${modules.length} modules</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>
     </div></div>
     <div class="container"><div class="module-grid" id="module-grid"></div></div>`;
+  document.getElementById('logout')?.addEventListener('click',e=>{e.preventDefault();localStorage.removeItem('vpm_user');state.user=null;state.view="login";render()});
   const grid=document.getElementById('module-grid');
   modules.forEach((mod,i)=>{
     const unlocked=i===0||state.completed.includes(i);
@@ -938,7 +1007,7 @@ function renderHome(app){
       <div class="module-label">Module ${mod.id}</div>
       <div class="module-title">${mod.title}</div>
       <div class="module-meta">${mod.sections.length} sections \u00b7 ${mod.quiz.length} quiz questions</div>`;
-    if(unlocked)card.addEventListener('click',()=>{state.currentModuleId=mod.id;state.currentSection=0;state.quizMode=false;state.quizAnswers={};state.submitted=false;state.view="study";render();window.scrollTo(0,0)});
+    if(unlocked)card.addEventListener('click',()=>{state.currentModuleId=mod.id;state.currentSection=0;state.quizMode=false;state.quizAnswers={};state.submitted=false;state.view="study";trackEvent({event:"module_start",moduleId:mod.id,moduleName:mod.title});render();window.scrollTo(0,0)});
     grid.appendChild(card);
   });
 }
@@ -991,15 +1060,19 @@ function renderStudy(app){
   document.getElementById('next-sec')?.addEventListener('click',()=>{state.currentSection++;render();window.scrollTo(0,0)});
 }
 
-function goQuiz(){state.quizMode=true;state.quizAnswers={};state.submitted=false;render();window.scrollTo(0,0)}
+function goQuiz(){state.quizMode=true;state.quizAnswers={};state.hints={};state.helps={};state.submitted=false;render();window.scrollTo(0,0)}
 
 function renderQuiz(app){
   const mod=modules.find(m=>m.id===state.currentModuleId);
   const answered=Object.keys(state.quizAnswers).length;
+  const helpsUsed=Object.keys(state.helps).length;
+  const hintsUsed=Object.keys(state.hints).length;
   if(state.submitted){
-    const score=mod.quiz.filter((_,i)=>state.quizAnswers[i]===mod.quiz[i].correct).length;
-    const passed=score/mod.quiz.length>=.8;
+    const totalCorrect=mod.quiz.filter((_,i)=>state.quizAnswers[i]===mod.quiz[i].correct).length;
+    const independent=mod.quiz.filter((_,i)=>state.quizAnswers[i]===mod.quiz[i].correct&&!state.helps[i]).length;
+    const passed=independent/mod.quiz.length>=.8;
     if(passed&&!state.completed.includes(mod.id)){state.completed.push(mod.id);saveCompleted()}
+    trackEvent({event:"quiz_complete",moduleId:mod.id,moduleName:mod.title,score:totalCorrect,independent,totalQuestions:mod.quiz.length,passed,hintsUsed,helpsUsed});
     app.innerHTML=`
       <div class="study-header"><div class="container"><div class="inner">
         <button class="btn-ghost" id="back-study">\u2190 Back to Study</button>
@@ -1009,9 +1082,11 @@ function renderQuiz(app){
       <div class="container" style="padding-top:28px;padding-bottom:60px">
         <div class="quiz-result ${passed?"passed":"failed"}">
           <div style="font-size:48px;margin-bottom:8px">${passed?"\ud83c\udf89":"\ud83d\udcda"}</div>
-          <div class="quiz-score" style="color:${passed?C.teal:C.berry}">${score}/${mod.quiz.length}</div>
-          <div style="font-size:16px;font-weight:700;color:${C.soil};margin-bottom:8px">${passed?"Module Passed! \u2713":"Keep Studying \u2014 you need 80%"}</div>
-          <div style="font-size:13px;color:${C.grey}">Score: ${(score/mod.quiz.length*100).toFixed(0)}%</div>
+          <div class="quiz-score" style="color:${passed?C.teal:C.berry}">${independent}/${mod.quiz.length}</div>
+          <div style="font-size:16px;font-weight:700;color:${C.soil};margin-bottom:4px">${passed?"Module Passed! \u2713":"Keep Studying \u2014 you need 80%"}</div>
+          <div style="font-size:13px;color:${C.grey};margin-bottom:4px">Independent score: ${(independent/mod.quiz.length*100).toFixed(0)}% ${passed?"":"(need 80%)"}</div>
+          ${helpsUsed>0?`<div style="font-size:12px;margin-top:4px"><span style="background:${C.berry};color:${C.white};font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px">Help used: ${helpsUsed}/${mod.quiz.length}</span> <span style="color:${C.grey};font-size:11px;margin-left:4px">\u2014 these don\u2019t count towards your pass score</span></div>`:""}
+          ${hintsUsed>0?`<div style="font-size:11px;color:${C.amber};margin-top:4px">Hints used: ${hintsUsed}</div>`:""}
           <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap">
             ${!passed?`<button class="btn-teal" id="retry" style="padding:10px 20px;font-size:13px">Try Again</button><button class="pill" id="review" style="border-color:${C.teal};color:${C.teal};padding:10px 20px">Review Materials</button>`:`<button class="btn-teal" id="back-all" style="padding:10px 24px;font-size:14px">\u2190 Back to All Modules</button>`}
           </div>
@@ -1021,18 +1096,24 @@ function renderQuiz(app){
     const review=document.getElementById('quiz-review');
     mod.quiz.forEach((q,i)=>{
       const correct=state.quizAnswers[i]===q.correct;
+      const usedHelp=state.helps[i];
       const div=document.createElement('div');
       div.className=`quiz-question ${correct?"correct":"wrong"}`;
-      div.innerHTML=`<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px"><span style="font-size:18px;flex-shrink:0">${correct?"\u2705":"\u274c"}</span><div class="quiz-q">${q.q}</div></div>
+      div.innerHTML=`
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+          <span style="font-size:18px;flex-shrink:0">${correct?"\u2705":"\u274c"}</span>
+          <div class="quiz-q">${q.q}${usedHelp?'<span class="help-tag">HELP USED</span>':""}</div>
+        </div>
         ${q.options.map((opt,j)=>{
           let cls="quiz-opt";
           if(j===q.correct)cls+=" correct-answer";
           else if(j===state.quizAnswers[i]&&j!==q.correct)cls+=" wrong-answer";
           return`<div class="${cls}" style="cursor:default">${opt}</div>`;
-        }).join("")}`;
+        }).join("")}
+        ${q.explanation?`<div class="help-box" style="margin-top:10px"><strong>Explanation:</strong> ${q.explanation}</div>`:""}`;
       review.appendChild(div);
     });
-    document.getElementById('retry')?.addEventListener('click',()=>{state.quizAnswers={};state.submitted=false;render();window.scrollTo(0,0)});
+    document.getElementById('retry')?.addEventListener('click',()=>{state.quizAnswers={};state.hints={};state.helps={};state.submitted=false;render();window.scrollTo(0,0)});
     document.getElementById('review')?.addEventListener('click',()=>{state.quizMode=false;state.currentSection=0;render();window.scrollTo(0,0)});
     document.getElementById('back-all')?.addEventListener('click',()=>{state.view="home";render()});
     document.getElementById('back-study')?.addEventListener('click',()=>{state.quizMode=false;render()});
@@ -1058,9 +1139,37 @@ function renderQuiz(app){
         const btn=document.createElement('button');
         btn.className=`quiz-opt ${state.quizAnswers[i]===j?"selected":""}`;
         btn.textContent=opt;
-        btn.addEventListener('click',()=>{state.quizAnswers[i]=j;render();});
+        btn.addEventListener('click',()=>{if(!state.helps[i]){state.quizAnswers[i]=j;render();}});
         div.appendChild(btn);
       });
+      // Hint + Help buttons row
+      const row=document.createElement('div');
+      row.className='hint-help-row';
+      if(q.hint&&!state.hints[i]&&!state.helps[i]){
+        const hintBtn=document.createElement('button');
+        hintBtn.className='btn-hint';hintBtn.textContent='\ud83d\udca1 Hint';
+        hintBtn.addEventListener('click',()=>{state.hints[i]=true;render()});
+        row.appendChild(hintBtn);
+      }
+      if(q.explanation&&!state.helps[i]){
+        const helpBtn=document.createElement('button');
+        helpBtn.className='btn-help';helpBtn.textContent='\ud83c\udd98 Help, I\u2019ve no idea';
+        helpBtn.addEventListener('click',()=>{state.helps[i]=true;state.hints[i]=true;state.quizAnswers[i]=q.correct;render()});
+        row.appendChild(helpBtn);
+      }
+      div.appendChild(row);
+      // Show hint if revealed
+      if(state.hints[i]&&q.hint&&!state.helps[i]){
+        const hintBox=document.createElement('div');
+        hintBox.className='hint-box';hintBox.innerHTML=`\ud83d\udca1 <strong>Hint:</strong> ${q.hint}`;
+        div.appendChild(hintBox);
+      }
+      // Show help explanation if revealed
+      if(state.helps[i]&&q.explanation){
+        const helpBox=document.createElement('div');
+        helpBox.className='help-box';helpBox.innerHTML=`\ud83c\udd98 <strong>Answer revealed:</strong> ${q.explanation}`;
+        div.appendChild(helpBox);
+      }
       container.appendChild(div);
     });
     document.getElementById('submit-quiz')?.addEventListener('click',()=>{if(answered===mod.quiz.length){state.submitted=true;render();window.scrollTo(0,0)}});
@@ -1070,6 +1179,48 @@ function renderQuiz(app){
 
 // ─── BOOT ──────────────────────────────────────────────────────
 render();
+
+/*
+ * ═══════════════════════════════════════════════════════════════
+ * GOOGLE APPS SCRIPT — SETUP INSTRUCTIONS
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * 1. Create a new Google Sheet called "Vitagri Learning Tracker"
+ * 2. Go to Extensions > Apps Script
+ * 3. Delete any default code and paste the script below
+ * 4. Click Deploy > New deployment
+ *    - Type: Web app
+ *    - Execute as: Me
+ *    - Who has access: Anyone
+ * 5. Click Deploy and copy the URL
+ * 6. Paste it into the SHEET_URL constant at the top of this file
+ *
+ * ─── APPS SCRIPT CODE (paste into Apps Script editor) ─────────
+ *
+ * function doPost(e) {
+ *   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+ *   var data = JSON.parse(e.postData.contents);
+ *
+ *   if (data.event === "login") {
+ *     sheet.appendRow([data.timestamp, data.event, data.firstName, data.lastName, data.email, "", "", "", "", "", ""]);
+ *   } else if (data.event === "module_start") {
+ *     sheet.appendRow([data.timestamp, data.event, data.firstName, data.lastName, data.email, data.moduleId, data.moduleName, "", "", "", ""]);
+ *   } else if (data.event === "quiz_complete") {
+ *     sheet.appendRow([data.timestamp, data.event, data.firstName, data.lastName, data.email, data.moduleId, data.moduleName, data.score + "/" + data.totalQuestions, data.independent + "/" + data.totalQuestions, data.hintsUsed, data.helpsUsed, data.passed ? "PASSED" : "FAILED"]);
+ *   }
+ *
+ *   return ContentService.createTextOutput(JSON.stringify({status: "ok"})).setMimeType(ContentService.MimeType.JSON);
+ * }
+ *
+ * function doGet(e) {
+ *   return ContentService.createTextOutput("Vitagri Learning Tracker API is running.");
+ * }
+ *
+ * ─── SHEET HEADERS (add to row 1 of your sheet) ──────────────
+ * Timestamp | Event | First Name | Last Name | Email | Module ID | Module Name | Score | Independent Score | Hints Used | Helps Used | Result
+ *
+ * ═══════════════════════════════════════════════════════════════
+ */
 </script>
 </body>
 </html>
