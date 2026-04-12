@@ -156,10 +156,75 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 @keyframes drawLine{from{width:0}to{width:100%}}
 
+/* Intro Landing */
+.intro-wrap{min-height:100vh;background:var(--soil);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 24px;text-align:center;overflow:hidden}
+.intro-badge{display:inline-block;background:rgba(42,157,143,.15);border:1px solid rgba(42,157,143,.3);color:var(--teal);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:24px}
+.intro-hero{color:var(--white);font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:16px;max-width:700px}
+.intro-hero em{font-style:normal;color:var(--amber)}
+.intro-sub{color:rgba(255,255,255,.6);font-size:clamp(14px,2.5vw,18px);line-height:1.6;max-width:600px;margin-bottom:32px}
+.intro-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:640px;width:100%;margin-bottom:40px}
+@media(max-width:500px){.intro-stats{grid-template-columns:1fr;gap:12px}}
+.intro-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px 16px}
+.intro-stat .num{font-size:clamp(28px,4vw,40px);font-weight:800;line-height:1}
+.intro-stat .label{font-size:11px;color:rgba(255,255,255,.5);margin-top:6px;line-height:1.4}
+.intro-cta{background:var(--teal);color:var(--white);border:none;border-radius:12px;padding:18px 36px;font-size:clamp(15px,2.5vw,18px);font-weight:700;letter-spacing:-.3px;box-shadow:0 4px 24px rgba(42,157,143,.4);transition:all .3s}
+.intro-cta:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(42,157,143,.5)}
+.intro-footer{color:rgba(255,255,255,.3);font-size:11px;margin-top:32px}
+
+/* Chat UI */
+.chat-wrap{background:var(--white);border:2px solid var(--lgrey);border-radius:12px;overflow:hidden;margin:20px 0}
+.chat-header{background:var(--soil);padding:12px 16px;display:flex;align-items:center;gap:10px}
+.chat-header .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite}
+.chat-messages{height:320px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;word-wrap:break-word}
+.chat-msg.user{align-self:flex-end;background:var(--teal);color:var(--white);border-bottom-right-radius:4px}
+.chat-msg.assistant{align-self:flex-start;background:var(--parch);color:var(--soil);border-bottom-left-radius:4px}
+.chat-msg.typing{align-self:flex-start;background:var(--parch);color:var(--grey);font-style:italic}
+.chat-input-row{display:flex;border-top:1px solid var(--lgrey);padding:8px}
+.chat-input{flex:1;border:none;padding:10px 14px;font-size:14px;font-family:inherit;outline:none;background:transparent}
+.chat-send{background:var(--teal);color:var(--white);border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;flex-shrink:0}
+.chat-send:disabled{opacity:.4;cursor:not-allowed}
+@media(max-width:600px){.chat-messages{height:260px}}
+
+/* Role Selector */
+.role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:600px){.role-grid{grid-template-columns:repeat(2,1fr)}}
+.role-card{background:var(--white);border:2px solid var(--lgrey);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:all .2s}
+.role-card:hover{border-color:var(--teal)}
+.role-card.active{border-color:var(--teal);background:rgba(42,157,143,.06)}
+.role-card .role-icon{font-size:24px;margin-bottom:6px}
+.role-card .role-name{font-size:12px;font-weight:700;color:var(--soil)}
+
+/* 7-point wheel */
+.wheel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+@media(max-width:600px){.wheel-grid{grid-template-columns:repeat(2,1fr)}}
+.wheel-point{border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.wheel-point:hover{transform:translateY(-2px)}
+.wheel-point.active{border-color:var(--white);transform:translateY(-2px)}
+.wheel-point .wp-num{font-size:20px;font-weight:800;opacity:.5;margin-bottom:4px}
+.wheel-point .wp-title{font-size:11px;font-weight:700;line-height:1.3}
+
+/* Enhanced mobile */
+@media(max-width:600px){
+  .drag-source{gap:6px}
+  .drag-item{padding:6px 10px;font-size:11px}
+  .drag-zone{min-height:50px;padding:8px}
+  .intro-hero{font-size:28px}
+  .site-header .logo-text h1{font-size:16px}
+  .study-header .title{font-size:11px}
+  .section-nav{gap:6px}
+  .section-btn{padding:4px 10px;font-size:11px}
+  .quiz-q{font-size:12px}
+  .quiz-opt{padding:8px 12px;font-size:11px}
+  .analogy-box{font-size:12px;padding:10px 12px}
+  .jargon-popup{width:220px;font-size:11px}
+}
+
 /* Animations */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeIn .3s ease}
+@keyframes countUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -263,7 +328,7 @@ function trackEvent(data){
 
 // ─── STATE ─────────────────────────────────────────────────────
 const state={
-  view:localStorage.getItem('vpm_user')?"home":"login",
+  view:localStorage.getItem('vpm_user')?"home":"intro",
   user:JSON.parse(localStorage.getItem('vpm_user')||'null'),
   currentModuleId:null,currentSection:0,quizMode:false,
   quizAnswers:{},hints:{},helps:{},submitted:false,
@@ -1114,8 +1179,119 @@ function renderYouAreTheModel(el){
   draw();
 }
 
+// ─── MODULE 12 VISUAL RENDERERS ───────────────────────────────
+
+function renderGroundUpWheel(el){
+  const points=[
+    {n:1,title:"Measure What Matters",col:C.teal,icon:"\ud83d\udccf",detail:"Establish standardised, affordable measurement protocols for soil health and food nutrient density. Publish core protocol by Q3 2026. Reduce per-sample testing costs by 30% by 2028."},
+    {n:2,title:"Reward What Works",col:C.amber,icon:"\ud83c\udfc6",detail:"Define a credible, tiered verification framework connecting farming practices to measured nutrient outcomes. Launch \u2018Nutrient Dense\u2019 verification by end 2026. Demonstrate quantifiable price premium by 2029."},
+    {n:3,title:"Build the Evidence Base",col:C.lime,icon:"\ud83d\udd2c",detail:"Generate rigorous, practice-specific evidence through on-farm trials. 10+ pilot farms by 2026. Expand to 50+ across regional hubs by 2028. Commission 2+ randomised trials by 2029."},
+    {n:4,title:"Connect Farm to Fork to Health",col:C.berry,icon:"\ud83c\udf3d",detail:"Build practical procurement pathways routing nutrient-dense food to schools, hospitals, and communities with high diet-related illness. Publish replicable \u2018farm-to-institution toolkit\u2019 by 2028."},
+    {n:5,title:"Democratise Access",col:C.teal,icon:"\u2764\ufe0f",detail:"Prioritise affordability and equity \u2014 nutrient-dense food must not become premium-only. Launch \u2018Food is Medicine\u2019 community health programme by 2027. Ensure 50%+ of pilots serve universal offerings."},
+    {n:6,title:"Create Trusted Standards",col:C.amber,icon:"\ud83d\udee1\ufe0f",detail:"Establish governance structures and scientific oversight protecting the integrity of every claim. Convene Scientific Advisory Board and Farmer Advisory Panel by Q2 2026. Commission first independent audit by 2028."},
+    {n:7,title:"Scale Through Collaboration",col:C.lime,icon:"\ud83e\udd1d",detail:"Grow as a national alliance of farmers, food businesses, health professionals, scientists, and citizens. Build 1,000+ active supporters by end 2026. Establish regional hubs in 3+ UK regions by 2028."},
+  ];
+  let active=null;
+  function draw(){
+    el.innerHTML=`
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-weight:700;color:${C.amber};font-size:14px;margin-bottom:4px">The GroundUp Framework \u2014 7 Points for Change</div>
+        <div style="font-size:11px;color:${C.grey}">Click each point to discover the plan</div>
+      </div>
+      <div class="wheel-grid">
+        ${points.map(p=>`<div class="wheel-point ${active===p.n?"active":""}" data-n="${p.n}" style="background:${p.col}${active===p.n?"":"20"};color:${active===p.n?C.white:p.col}">
+          <div style="font-size:18px;margin-bottom:4px">${p.icon}</div>
+          <div class="wp-num">${p.n}</div>
+          <div class="wp-title">${p.title}</div>
+        </div>`).join("")}
+        <div style="grid-column:span 1;background:${C.soil};border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:center;text-align:center">
+          <div><div style="color:${C.amber};font-weight:800;font-size:13px">Measure</div><div style="color:rgba(255,255,255,.4);font-size:9px;margin:2px 0">\u2193</div><div style="color:${C.teal};font-weight:800;font-size:13px">Validate</div><div style="color:rgba(255,255,255,.4);font-size:9px;margin:2px 0">\u2193</div><div style="color:${C.lime};font-weight:800;font-size:13px">Reward</div></div>
+        </div>
+      </div>
+      ${active?`<div style="background:${points[active-1].col};border-radius:10px;padding:16px;margin-top:8px;animation:fadeIn .3s">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:20px">${points[active-1].icon}</span><div style="font-weight:700;color:${C.white};font-size:13px">Point ${active}: ${points[active-1].title}</div></div>
+        <div style="font-size:12px;color:rgba(255,255,255,.9);line-height:1.6">${points[active-1].detail}</div>
+      </div>`:`<div style="text-align:center;margin-top:8px;font-size:11px;color:${C.grey}">Click any point above to learn more</div>`}`;
+    el.querySelectorAll('[data-n]').forEach(btn=>btn.addEventListener('click',()=>{active=active===+btn.dataset.n?null:+btn.dataset.n;draw()}));
+  }
+  draw();
+}
+
+function renderRoleSelector(el){
+  const roles=[
+    {id:"farmer",icon:"\ud83d\ude9c",name:"Farmer / Grower",actions:["Participate in measurement pilot programmes","Adopt the Vitagri & Bionutrient Institute verification framework on your farm","Share your data to strengthen the evidence base","Earn premiums through tiered certification (\u2018Verified\u2019, \u2018Improving\u2019, \u2018Exemplar\u2019)","Connect with procurement pilots supplying schools and hospitals"]},
+    {id:"agro",icon:"\ud83c\udf31",name:"Agronomist",actions:["Advise farmers on practices linked to higher nutrient density","Use the predictive model to set soil health targets","Interpret SHAP values to prioritise management changes","Bridge the gap between scientific evidence and practical farm decisions","Join the Farmer Advisory Panel to ground-truth protocols"]},
+    {id:"scientist",icon:"\ud83d\udd2c",name:"Scientist / Researcher",actions:["Collaborate on on-farm trials and demonstration studies","Contribute to the open-source predictive model codebase","Publish findings \u2014 positive, negative, and mixed","Join the Scientific Advisory Board for independent oversight","Co-author peer-reviewed papers with Vitagri & Bionutrient Institute"]},
+    {id:"food",icon:"\ud83c\udf5e",name:"Food Business",actions:["Source through the nutrient-dense procurement pathway","Use verification to differentiate your products with credible claims","Co-design procurement specifications with farmers","Demonstrate willingness to pay premiums for verified quality","Integrate nutrient outcomes into your supply chain standards"]},
+    {id:"health",icon:"\u2764\ufe0f",name:"Health Professional",actions:["Advocate for nutrient-dense food in hospital and care settings","Support \u2018Food is Medicine\u2019 community programmes","Use evidence from the predictive model in nutritional guidance","Connect diet quality improvements to measured health outcomes","Engage with public health policy to embed nutrient standards"]},
+    {id:"policy",icon:"\ud83c\udfe0",name:"Policy / Government",actions:["Embed nutrient outcomes in Environmental Land Management schemes","Support the National Food Strategy with measurement infrastructure","Fund regional demonstration farm hubs","Include food quality metrics in public procurement standards","Commission independent audits of the verification framework"]}
+  ];
+  let active="farmer";
+  function draw(){
+    const role=roles.find(r=>r.id===active);
+    el.innerHTML=`
+      <div style="font-weight:700;color:${C.soil};font-size:13px;margin-bottom:4px">Your Role in the Revolution</div>
+      <div style="font-size:11px;color:${C.grey};margin-bottom:12px">Select your role to see how you can contribute to Growing Health Together</div>
+      <div class="role-grid">
+        ${roles.map(r=>`<div class="role-card ${active===r.id?"active":""}" data-role="${r.id}"><div class="role-icon">${r.icon}</div><div class="role-name">${r.name}</div></div>`).join("")}
+      </div>
+      <div style="background:${C.teal}08;border:2px solid ${C.teal};border-radius:10px;padding:16px;animation:fadeIn .3s">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:22px">${role.icon}</span><div style="font-weight:700;color:${C.teal};font-size:14px">${role.name}</div></div>
+        <div style="font-size:12px;font-weight:700;color:${C.soil};margin-bottom:8px">How you can contribute:</div>
+        ${role.actions.map(a=>`<div style="display:flex;gap:8px;padding:4px 0;font-size:12px;color:${C.grey};align-items:flex-start"><span style="color:${C.teal};flex-shrink:0;margin-top:2px">\u25b8</span>${a}</div>`).join("")}
+      </div>`;
+    el.querySelectorAll('[data-role]').forEach(btn=>btn.addEventListener('click',()=>{active=btn.dataset.role;draw()}));
+  }
+  draw();
+}
+
+function renderPulseChat(el){
+  let messages=[{role:"assistant",content:"Hello! I\u2019m Vitagri Pulse \u2014 your AI guide to nutrient-dense agriculture. I\u2019ve been trained on the Vitagri & Bionutrient Institute white paper, the GroundUp Framework, and 3,000+ peer-reviewed studies.\n\nTell me your role (farmer, scientist, agronomist, food business, policy maker, or health professional) and I\u2019ll help you build a personalised action plan for your next steps."}];
+  let sending=false;
+  function draw(){
+    el.innerHTML=`
+      <div style="font-weight:700;color:${C.soil};font-size:13px;margin-bottom:4px">Claude Pulse AI \u2014 Your Personalised Toolkit</div>
+      <div style="font-size:11px;color:${C.grey};margin-bottom:12px">Ask questions, explore ideas, and build your action plan. Powered by Claude AI, grounded in Vitagri\u2019s research.</div>
+      <div class="chat-wrap">
+        <div class="chat-header"><div class="dot"></div><span style="color:${C.white};font-size:12px;font-weight:600">Vitagri Pulse AI</span><span style="color:rgba(255,255,255,.4);font-size:10px;margin-left:auto">Powered by Claude</span></div>
+        <div class="chat-messages" id="pulse-messages">
+          ${messages.map(m=>`<div class="chat-msg ${m.role}">${m.content.replace(/\n/g,'<br>')}</div>`).join("")}
+          ${sending?'<div class="chat-msg typing">Thinking\u2026</div>':""}
+        </div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="pulse-input" placeholder="Ask me anything about nutrient-dense agriculture\u2026" ${sending?"disabled":""}>
+          <button class="chat-send" id="pulse-send" ${sending?"disabled":""}>Send</button>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:12px">
+        <a href="https://vitagri.org/pulse" target="_blank" rel="noopener" style="display:inline-block;background:${C.soil};color:${C.amber};text-decoration:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700">Open full Vitagri Pulse \u2192</a>
+      </div>`;
+    const msgArea=document.getElementById('pulse-messages');
+    if(msgArea)msgArea.scrollTop=msgArea.scrollHeight;
+    const input=document.getElementById('pulse-input');
+    const sendBtn=document.getElementById('pulse-send');
+    async function send(){
+      const text=input?.value?.trim();
+      if(!text||sending)return;
+      messages.push({role:"user",content:text});
+      sending=true;draw();
+      try{
+        const resp=await fetch('/.netlify/functions/pulse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:messages.slice(0,-1)})});
+        const data=await resp.json();
+        messages.push({role:"assistant",content:data.response||"Sorry, I couldn\u2019t process that. Please try again."});
+      }catch(e){messages.push({role:"assistant",content:"I\u2019m currently unavailable. Please try the full Vitagri Pulse at vitagri.org/pulse."});}
+      sending=false;draw();
+    }
+    sendBtn?.addEventListener('click',send);
+    input?.addEventListener('keydown',e=>{if(e.key==='Enter')send()});
+    input?.focus();
+  }
+  draw();
+}
+
 // ─── VISUAL MAP (id → renderer) ────────────────────────────────
 const visuals={
+  groundup:renderGroundUpWheel, roles:renderRoleSelector, pulse:renderPulseChat,
   dataflow:renderDataFlow, dragdrop:renderDragDrop, dotplot:renderDotPlot,
   guessavg:renderGuessAverage, guesscheck:renderGuessAndCheck, youmodel:renderYouAreTheModel,
   bidir:renderBiDirectionalFlow, vartypes:renderVariableTypes, streams:renderFourStreams,
@@ -1306,6 +1482,21 @@ const modules=[
     {q:"A novel agroforestry farm scores 42% confidence. The most likely explanation is:",options:["Very poor nutrient density","The model is malfunctioning","The farm type is unlike anything in training data \u2014 insufficient evidence, not failure","Incomplete data collection"],correct:2,hint:"The model was trained on 30 conventional, organic, and mixed farms. Has it ever seen an agroforestry system?",explanation:"A 42% confidence score for a novel farm type most likely reflects insufficient training data for that category. The model has never seen agroforestry \u2014 it lacks examples to learn from. This is a limitation of the training set, not a judgement on the farm\u2019s quality. As more diverse farms join the platform, the model\u2019s coverage improves."},
     {q:"Vitagri & Bionutrient Institute's model is best described as:",options:["A universal oracle for food quality","A decision-support tool with probabilistic predictions and quantified uncertainty","A replacement for laboratory analysis","A regulatory compliance tool"],correct:1,hint:"The model gives probabilities and confidence scores, not definitive answers. What type of tool works that way?",explanation:"Vitagri & Bionutrient Institute\u2019s model is a decision-support tool \u2014 it provides probabilistic predictions with explicit uncertainty quantification (confidence scores). It assists human decision-making rather than replacing it. It complements, not replaces, laboratory analysis and does not claim universal applicability across all regions and farm types."},
   ]},
+  {id:12,title:"Inspiration For a Healthier Farming Future",icon:"\ud83c\udf1f",sections:[
+    {heading:"The Vision \u2014 Growing Health Together",visual:"groundup",dark:true,
+     analogy:"Like building a bridge between two worlds that should never have been separated \u2014 farming and human health. The GroundUp Framework is the blueprint for that bridge.",
+     body:"You\u2019ve now completed the technical journey \u2014 from data foundations through GLMM, XGBoost, metabolomics, and the bidirectional architecture. But the technology is not the point. The point is what it makes possible: a world where farming is measured, verified, and rewarded for producing food that genuinely nourishes people. The GroundUp Framework above is Vitagri & Bionutrient Institute\u2019s 7-point plan to make this real. Click each point to explore the targets and timelines. At its heart is a simple principle: Measure what matters, Validate what works, Reward what\u2019s proven. This is not about labels or marketing \u2014 it\u2019s about building the infrastructure so that doing the right thing is commercially rational for every farmer in the system."},
+    {heading:"Your Role in the Revolution",visual:"roles",
+     body:"The food system is not changed by any single group working alone. It requires farmers willing to measure and share data, scientists willing to publish all results (positive and negative), agronomists bridging the gap between evidence and practice, food businesses willing to pay premiums for verified quality, health professionals connecting diet quality to health outcomes, and policy makers embedding nutrient metrics into public procurement and land management schemes. The role selector above shows specific actions for each group. The critical insight is that every role depends on every other: farmers need markets, markets need evidence, evidence needs data, data needs farmers. This circular dependency is exactly what the GroundUp Framework is designed to catalyse. When the loop is complete, the virtuous cycle begins: more participants generate more data, better models, more credible certifications, and ultimately a food system that rewards nutrition, not just volume."},
+    {heading:"Your Personalised Next Steps \u2014 Claude Pulse AI",visual:"pulse",
+     body:"You\u2019ve learned the science. Now it\u2019s time to act. Claude Pulse is your AI-powered guide, trained on the Vitagri & Bionutrient Institute white paper (covering 3,000+ peer-reviewed studies), the GroundUp Framework, and the predictive model methodology you\u2019ve just studied. Tell Pulse your role, your context, and your questions \u2014 and it will help you build a personalised action plan for your next steps. Whether you\u2019re a farmer wanting to understand what soil health changes would most improve your nutrient density scores, a scientist looking to collaborate on trials, or a food business exploring procurement pathways \u2014 Pulse can help you find your starting point. Growing Health Together starts with one step. Take yours now."},
+  ],quiz:[
+    {q:"The GroundUp Framework consists of how many interconnected points?",options:["5 points","7 points","10 points","12 points"],correct:1,hint:"Count the points in the interactive wheel above.",explanation:"The GroundUp Framework has 7 interconnected points: Measure What Matters, Reward What Works, Build the Evidence Base, Connect Farm to Fork to Health, Democratise Access, Create Trusted Standards, and Scale Through Collaboration."},
+    {q:"What is the core operating principle behind Vitagri & Bionutrient Institute\u2019s approach?",options:["Organic certification for all farms","Measure, Validate, Reward","Maximum crop yield optimisation","Government regulation of food quality"],correct:1,hint:"Three words that describe the entire framework cycle.",explanation:"Measure, Validate, Reward is the core cycle: measure soil health and nutrient density with standardised protocols, validate the link between farming practices and outcomes through rigorous evidence, and reward farmers who produce verified nutrient-dense food through market premiums and recognition."},
+    {q:"Why must nutrient-dense food NOT become premium-only?",options:["Because premium products are harder to certify","Because equity demands that the communities most affected by diet-related illness have access","Because farmers prefer mass market pricing","Because premium products require more data"],correct:1,hint:"Think about Point 5 of the GroundUp Framework \u2014 Democratise Access.",explanation:"Point 5 (Democratise Access) explicitly states that affordability and equity must be prioritised. The communities with highest diet-related illness are often those with least access to quality food. If nutrient-dense food becomes premium-only, the framework fails its social mission. 50%+ of procurement pilots must serve universal offerings like school meals and hospital food."},
+    {q:"The \u2018virtuous data cycle\u2019 in the GroundUp Framework means:",options:["Data is recycled from old studies","More farms join \u2192 more data \u2192 better models \u2192 more credible certifications \u2192 more farms join","Scientists share data between universities","Government agencies collect farm data centrally"],correct:1,hint:"Each new participant strengthens the system for everyone else.",explanation:"The virtuous cycle is the mechanism that makes the whole framework self-sustaining: each new certified farm adds validated training data, which improves model accuracy, which makes certifications more credible, which attracts more farms. This compounding loop is why early participation is so valuable \u2014 the first farms build the foundation for thousands."},
+    {q:"Which statement best captures the philosophy of \u2018Growing Health Together\u2019?",options:["Individual farms should compete to produce the most nutritious food","Durable change happens when every part of the food system \u2014 farmers, scientists, businesses, health professionals, and policy makers \u2014 works together","Technology alone will solve the nutrition crisis","Only organic farming can produce nutrient-dense food"],correct:1,hint:"The word \u2018Together\u2019 in the name is the clue.",explanation:"Growing Health Together recognises that no single group can transform the food system alone. Farmers need markets, markets need evidence, evidence needs data, data needs farmers. The philosophy is collaborative, systems-oriented, and evidence-first \u2014 believing that durable change happens when doing the right thing is commercially rational for everyone in the chain."},
+  ]},
 ];
 
 // ─── INLINE VISUAL RENDERERS (static HTML blocks) ──────────────
@@ -1367,10 +1558,29 @@ function renderInlineVisual(key,el){
 // ─── RENDER ENGINE ─────────────────────────────────────────────
 function render(){
   const app=document.getElementById('app');
-  if(state.view==="login") renderLogin(app);
+  if(state.view==="intro") renderIntro(app);
+  else if(state.view==="login") renderLogin(app);
   else if(state.view==="home") renderHome(app);
   else if(state.view==="study"&&!state.quizMode) renderStudy(app);
   else if(state.view==="study"&&state.quizMode) renderQuiz(app);
+}
+
+function renderIntro(app){
+  app.innerHTML=`
+    <div class="intro-wrap">
+      <div class="intro-badge">Vitagri & Bionutrient Institute</div>
+      <h1 class="intro-hero">The food system is broken.<br><em>You can help fix it.</em></h1>
+      <p class="intro-sub">The same crop grown under different conditions can vary <strong>200-fold</strong> in antioxidant content. Yet no credible framework exists to measure, verify, and reward nutrient-dense food production \u2014 until now.</p>
+      <div class="intro-stats">
+        <div class="intro-stat" style="animation:countUp .6s ease .2s both"><div class="num" style="color:${C.teal}">200\u00d7</div><div class="label">Antioxidant variation within the same crop type</div></div>
+        <div class="intro-stat" style="animation:countUp .6s ease .4s both"><div class="num" style="color:${C.amber}">\u00a3268bn</div><div class="label">Annual cost of diet-related disease in the UK</div></div>
+        <div class="intro-stat" style="animation:countUp .6s ease .6s both"><div class="num" style="color:${C.berry}">96%</div><div class="label">Of UK adults fail to meet fibre recommendations</div></div>
+      </div>
+      <p class="intro-sub" style="font-size:clamp(13px,2vw,15px);margin-bottom:28px">This learning system will take you from the foundations of data science through to the cutting edge of predictive agriculture \u2014 <strong>12 interactive modules</strong> with hands-on exercises, quizzes, and an AI-powered toolkit to build your personalised action plan.</p>
+      <button class="intro-cta" id="intro-start">Let\u2019s change agriculture for good \u2192</button>
+      <div class="intro-footer">Built by Vitagri & Bionutrient Institute \u00b7 Predictive Model Learning System</div>
+    </div>`;
+  document.getElementById('intro-start')?.addEventListener('click',()=>{state.view="login";render()});
 }
 
 function renderLogin(app){
@@ -1407,7 +1617,7 @@ function renderHome(app){
     <div class="site-header"><div class="container">
       <div class="logo"><div class="logo-icon">\ud83c\udf31</div><div class="logo-text"><h1>Vitagri & Bionutrient Institute</h1><p>Predictive Model Learning System</p></div></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
-        <div class="subtitle" style="margin-bottom:0">11 modules from foundations to expert \u2014 complete each quiz at 80%+ to unlock the next</div>
+        <div class="subtitle" style="margin-bottom:0">12 modules from foundations to expert \u2014 complete each quiz at 80%+ to unlock the next</div>
         ${state.user?`<div class="user-badge">\ud83d\udc64 ${state.user.firstName} ${state.user.lastName}<a href="#" id="logout">Log out</a></div>`:""}
       </div>
       <div class="progress-box"><div class="progress-row"><span class="progress-label">Overall Progress</span><span class="progress-count">${state.completed.length}/${modules.length} modules</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>
