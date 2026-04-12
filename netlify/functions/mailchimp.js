@@ -170,7 +170,7 @@ exports.handler = async (event) => {
     }
 
   } catch (err) {
-    console.error('Mailchimp function error:', err);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Server error' }) };
+    console.error('Mailchimp function error:', err.message, err.stack);
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Server error', detail: err.message }) };
   }
 };
