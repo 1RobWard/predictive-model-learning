@@ -68,8 +68,11 @@ exports.handler = async (event) => {
   }
 
   try {
-    const body = typeof event.body === 'string' ? event.body : JSON.stringify(event.body);
-    const { action, email, firstName, lastName, tags, mergeFields } = JSON.parse(body || '{}');
+    let rawBody = event.body || '{}';
+    if (event.isBase64Encoded) {
+      rawBody = Buffer.from(rawBody, 'base64').toString('utf-8');
+    }
+    const { action, email, firstName, lastName, tags, mergeFields } = JSON.parse(rawBody);
     const subscriberHash = md5(email);
     const listEndpoint = `/lists/${MAILCHIMP_AUDIENCE_ID}`;
 
