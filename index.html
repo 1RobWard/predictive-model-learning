@@ -1681,15 +1681,34 @@ function renderIntro(app){
       <h1 class="intro-hero">The food system is broken.<br><em>You can help fix it.</em></h1>
       <p class="intro-sub">The same crop grown under different conditions can vary <strong>200-fold</strong> in antioxidant content. Yet no credible framework exists to measure, verify, and reward nutrient-dense food production \u2014 until now.</p>
       <div class="intro-stats">
-        <div class="intro-stat" style="animation:countUp .6s ease .2s both"><div class="num" style="color:${C.teal}">200\u00d7</div><div class="label">Antioxidant variation within the same crop type</div></div>
-        <div class="intro-stat" style="animation:countUp .6s ease .4s both"><div class="num" style="color:${C.amber}">\u00a3268bn</div><div class="label">Annual cost of diet-related disease in the UK</div></div>
-        <div class="intro-stat" style="animation:countUp .6s ease .6s both"><div class="num" style="color:${C.berry}">60%</div><div class="label">Lower cancer risk linked to higher phytochemical intake</div></div>
+        <div class="intro-stat" style="animation:countUp .6s ease .2s both"><div class="num" style="color:${C.teal}" id="count-1">0\u00d7</div><div class="label">Antioxidant variation within the same crop type</div></div>
+        <div class="intro-stat" style="animation:countUp .6s ease .4s both"><div class="num" style="color:${C.amber}" id="count-2">\u00a30bn</div><div class="label">Annual cost of diet-related disease in the UK</div></div>
+        <div class="intro-stat" style="animation:countUp .6s ease .6s both"><div class="num" style="color:${C.berry}" id="count-3">0%</div><div class="label">Lower cancer risk linked to higher phytochemical intake</div></div>
       </div>
       <p class="intro-sub" style="font-size:clamp(13px,2vw,15px);margin-bottom:28px">This learning system will take you from the foundations of data science through to the cutting edge of predictive agriculture \u2014 <strong>12 interactive modules</strong> with hands-on exercises, quizzes, and an AI-powered toolkit to build your personalised action plan.</p>
       <button class="intro-cta" id="intro-start">Let\u2019s change agriculture for good \u2192</button>
       <div class="intro-footer">Built by Vitagri & Bionutrient Institute \u00b7 Predictive Model Learning System</div>
     </div>`;
   document.getElementById('intro-start')?.addEventListener('click',()=>{state.view="login";render()});
+  // Animated number counters
+  function animateCount(id,target,prefix,suffix,duration,delay){
+    setTimeout(()=>{
+      const el=document.getElementById(id);if(!el)return;
+      const start=performance.now();
+      function tick(now){
+        const elapsed=now-start;
+        const progress=Math.min(elapsed/duration,1);
+        const eased=1-Math.pow(1-progress,3); // ease-out cubic
+        const current=Math.round(target*eased);
+        el.textContent=prefix+current+suffix;
+        if(progress<1)requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    },delay);
+  }
+  animateCount('count-1',200,'','\u00d7',2000,400);
+  animateCount('count-2',268,'\u00a3','bn',2200,700);
+  animateCount('count-3',60,'','%',1800,1000);
 }
 
 function renderLogin(app){
