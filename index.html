@@ -254,6 +254,29 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .pt-stat strong{color:var(--amber);font-weight:700}
 @media(max-width:600px){.progress-tracker .inner{gap:8px;font-size:10px}.pt-stat{font-size:9px}}
 
+/* Points & Timer */
+.pt-points{color:var(--amber);font-weight:700;white-space:nowrap}
+.pt-timer{color:rgba(255,255,255,.7);font-family:monospace;font-size:12px;white-space:nowrap}
+.points-earned{display:inline-block;background:var(--amber);color:var(--soil);font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;margin:2px}
+.points-lost{display:inline-block;background:var(--berry);color:var(--white);font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;margin:2px}
+.points-breakdown{background:var(--parch);border-radius:8px;padding:12px;margin-top:12px;font-size:12px}
+.encourage-flash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--teal);color:var(--white);font-size:20px;font-weight:800;padding:12px 28px;border-radius:12px;z-index:600;animation:encourageAnim .8s ease forwards;pointer-events:none}
+@keyframes encourageAnim{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-60%) scale(1)}}
+
+/* Leaderboard */
+.lb-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.lb-modal{background:var(--white);border-radius:16px;max-width:640px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.lb-header{background:var(--soil);padding:16px 20px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between}
+.lb-header h3{color:var(--amber);font-size:16px;margin:0}
+.lb-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer}
+.lb-table{width:100%;border-collapse:collapse;font-size:13px}
+.lb-table th{padding:10px 12px;text-align:left;background:var(--parch);font-weight:700;font-size:11px;color:var(--soil);border-bottom:2px solid var(--teal)}
+.lb-table td{padding:8px 12px;border-bottom:1px solid var(--lgrey)}
+.lb-table tr.me{background:rgba(42,157,143,.08)}
+.lb-rank{font-weight:800;color:var(--teal);font-size:14px}
+.lb-btn{background:var(--amber);color:var(--soil);border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+@media(max-width:600px){.lb-modal{max-height:90vh;border-radius:12px}.lb-table{font-size:11px}.lb-table th,.lb-table td{padding:6px 8px}}
+
 /* Fixed Pulse Widget */
 .pulse-fab{position:fixed;bottom:20px;right:20px;z-index:500;display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none}
 .pulse-fab>*{pointer-events:auto}
@@ -370,18 +393,45 @@ function attachJargonHandlers(container){
 }
 
 // ─── CELEBRATION CONFETTI ──────────────────────────────────────
-function launchCelebration(){
+function launchCelebration(count,duration){
+  count=count||120;duration=duration||6000;
   const wrap=document.createElement('div');wrap.className='confetti-wrap';document.body.appendChild(wrap);
   const colors=[C.teal,C.amber,C.berry,C.lime,'#ff6b6b','#ffd93d','#6bcb77','#4d96ff'];
   const shapes=['square','circle'];
-  for(let i=0;i<120;i++){
+  for(let i=0;i<count;i++){
     const piece=document.createElement('div');piece.className='confetti-piece';
     const col=colors[Math.floor(Math.random()*colors.length)];
     const shape=shapes[Math.floor(Math.random()*shapes.length)];
     piece.style.cssText=`left:${Math.random()*100}%;background:${col};width:${8+Math.random()*10}px;height:${8+Math.random()*10}px;border-radius:${shape==='circle'?'50%':'2px'};animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*1.5}s;opacity:0.9`;
     wrap.appendChild(piece);
   }
-  setTimeout(()=>wrap.remove(),6000);
+  setTimeout(()=>wrap.remove(),duration);
+}
+
+// ─── LEADERBOARD ──────────────────────────────────────────────
+async function showLeaderboard(){
+  let entries=[];
+  try{
+    const res=await fetch('/.netlify/functions/leaderboard');
+    const data=await res.json();
+    entries=data.entries||[];
+  }catch(e){}
+  const userEmail=state.user?.email||'';
+  const overlay=document.createElement('div');overlay.className='lb-overlay';
+  overlay.innerHTML=`
+    <div class="lb-modal">
+      <div class="lb-header"><h3>\ud83c\udfc6 Leaderboard</h3><button class="lb-close" id="lb-close">\u2715</button></div>
+      <div style="padding:16px">
+        ${entries.length===0?`<div style="text-align:center;padding:40px 20px;color:${C.grey}"><div style="font-size:32px;margin-bottom:8px">\ud83c\udfc6</div><div style="font-size:14px">No entries yet. Be the first to complete the course!</div></div>`:`
+        <table class="lb-table">
+          <thead><tr><th>#</th><th>Name</th><th>Organisation</th><th>Points</th><th>Time</th><th>Date</th></tr></thead>
+          <tbody>${entries.map((e,i)=>`<tr class="${e.email===userEmail?'me':''}"><td class="lb-rank">${i+1}</td><td>${e.name}</td><td style="color:${C.grey};font-size:11px">${e.org||'\u2014'}</td><td style="font-weight:700;color:${C.amber}">${e.points}</td><td style="font-family:monospace;font-size:11px">${e.time||'\u2014'}</td><td style="font-size:11px;color:${C.grey}">${e.date||''}</td></tr>`).join('')}</tbody>
+        </table>`}
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('lb-close')?.addEventListener('click',()=>overlay.remove());
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
 }
 
 // ─── GOOGLE APPS SCRIPT ENDPOINT ──────────────────────────────
@@ -401,10 +451,58 @@ const state={
   currentModuleId:null,currentSection:0,quizMode:false,
   quizAnswers:{},hints:{},helps:{},submitted:false,
   completed:JSON.parse(localStorage.getItem('vpm_completed')||'[]'),
-  scores:JSON.parse(localStorage.getItem('vpm_scores')||'{}')
+  scores:JSON.parse(localStorage.getItem('vpm_scores')||'{}'),
+  points:parseInt(localStorage.getItem('vpm_points')||'0'),
+  startTime:localStorage.getItem('vpm_startTime')||null,
+  endTime:localStorage.getItem('vpm_endTime')||null,
+  bestPoints:parseInt(localStorage.getItem('vpm_bestPoints')||'0'),
+  bestTime:localStorage.getItem('vpm_bestTime')||null
 };
 function saveCompleted(){localStorage.setItem('vpm_completed',JSON.stringify(state.completed))}
 function saveScores(){localStorage.setItem('vpm_scores',JSON.stringify(state.scores))}
+function savePoints(){localStorage.setItem('vpm_points',String(state.points))}
+function saveTimer(){if(state.startTime)localStorage.setItem('vpm_startTime',state.startTime);if(state.endTime)localStorage.setItem('vpm_endTime',state.endTime)}
+function getElapsedTime(){
+  if(!state.startTime)return"00:00:00";
+  const end=state.endTime?new Date(state.endTime):new Date();
+  const diff=Math.max(0,Math.floor((end-new Date(state.startTime))/1000));
+  const h=String(Math.floor(diff/3600)).padStart(2,'0');
+  const m=String(Math.floor((diff%3600)/60)).padStart(2,'0');
+  const s=String(diff%60).padStart(2,'0');
+  return h+':'+m+':'+s;
+}
+function getElapsedSeconds(){
+  if(!state.startTime)return 0;
+  const end=state.endTime?new Date(state.endTime):new Date();
+  return Math.max(0,Math.floor((end-new Date(state.startTime))/1000));
+}
+function calcModulePoints(mod){
+  const correct=mod.quiz.filter((_,i)=>state.quizAnswers[i]===mod.quiz[i].correct).length;
+  const hintsUsed=Object.keys(state.hints).length;
+  const helpsUsed=Object.keys(state.helps).length;
+  let pts=correct*10;
+  if(correct===mod.quiz.length&&hintsUsed===0&&helpsUsed===0)pts=correct*10*2; // perfect=double
+  pts-=hintsUsed*5;
+  pts-=helpsUsed*20;
+  return Math.max(0,pts);
+}
+function showEncouragement(text){
+  const el=document.createElement('div');el.className='encourage-flash';el.textContent=text;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),900);
+}
+const encouragements=["Nice one!","You\u2019ve got this!","Excellent!","Spot on!","Great work!","Keep going!","Brilliant!","Well done!"];
+function progressTrackerHTML(showSection,mod){
+  const s=getProgressStats();
+  return`<div class="progress-tracker"><div class="container"><div class="inner">
+    <div class="pt-stat"><strong>${s.done}/${s.totalMods}</strong> done</div>
+    <div class="pt-bar"><div class="pt-fill" style="width:${s.pct}%"></div></div>
+    <div class="pt-points">\u2b50 ${state.points} pts</div>
+    <div class="pt-timer" id="timer-display">\u23f1 ${getElapsedTime()}</div>
+    ${showSection&&mod?`<div class="pt-stat">Section <strong>${state.currentSection+1}/${mod.sections.length}</strong></div>`:""}
+  </div></div></div>`;
+}
+// Timer update interval
+setInterval(()=>{const el=document.getElementById('timer-display');if(el&&!state.endTime)el.textContent='\u23f1 '+getElapsedTime()},1000);
 function getProgressStats(){
   const totalMods=modules.length;
   const done=state.completed.length;
@@ -1693,9 +1791,11 @@ function renderIntro(app){
       </div>
       <p class="intro-sub" style="font-size:clamp(13px,2vw,15px);margin-bottom:28px">This learning system will take you from the foundations of data science through to the cutting edge of predictive agriculture \u2014 <strong>12 interactive modules</strong> with hands-on exercises, quizzes, and an AI-powered toolkit to build your personalised action plan.</p>
       <button class="intro-cta" id="intro-start">Let\u2019s change agriculture for good \u2192</button>
+      <div style="margin-top:16px"><button class="lb-btn" id="intro-leaderboard" style="background:transparent;border:1px solid rgba(233,168,76,.4);color:${C.amber}">\ud83c\udfc6 View Leaderboard</button></div>
       <div class="intro-footer">Built by Vitagri & Bionutrient Institute \u00b7 Predictive Model Learning System</div>
     </div>`;
   document.getElementById('intro-start')?.addEventListener('click',()=>{state.view="login";render()});
+  document.getElementById('intro-leaderboard')?.addEventListener('click',showLeaderboard);
   // Animated number counters
   function animateCount(id,target,prefix,suffix,duration,delay){
     setTimeout(()=>{
@@ -1730,16 +1830,18 @@ function renderLogin(app){
         <input type="text" id="login-first" class="login-field" placeholder="First name" autocomplete="given-name">
         <input type="text" id="login-last" class="login-field" placeholder="Last name" autocomplete="family-name">
         <input type="email" id="login-email" class="login-field" placeholder="Email address" autocomplete="email">
+        <input type="text" id="login-org" class="login-field" placeholder="Business / Organisation name" autocomplete="organization">
         <button class="login-btn" id="login-btn" disabled>Discover how data will change agriculture for good \u2192</button>
         <div style="font-size:10px;color:${C.grey};margin-top:12px;text-align:center">Your name and email are stored locally and sent to the team tracking sheet.</div>
       </div>
     </div>`;
-  const first=document.getElementById('login-first'),last=document.getElementById('login-last'),email=document.getElementById('login-email'),btn=document.getElementById('login-btn');
+  const first=document.getElementById('login-first'),last=document.getElementById('login-last'),email=document.getElementById('login-email'),org=document.getElementById('login-org'),btn=document.getElementById('login-btn');
   const check=()=>{btn.disabled=!(first.value.trim()&&last.value.trim()&&email.value.includes('@'))};
-  [first,last,email].forEach(f=>f.addEventListener('input',check));
+  [first,last,email,org].forEach(f=>f.addEventListener('input',check));
   btn.addEventListener('click',()=>{
-    state.user={firstName:first.value.trim(),lastName:last.value.trim(),email:email.value.trim()};
+    state.user={firstName:first.value.trim(),lastName:last.value.trim(),email:email.value.trim(),org:org.value.trim()};
     localStorage.setItem('vpm_user',JSON.stringify(state.user));
+    state.startTime=new Date().toISOString();state.endTime=null;state.points=0;saveTimer();savePoints();
     trackEvent({event:"login"});
     fetch('/.netlify/functions/mailchimp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'register',email:state.user.email,firstName:state.user.firstName,lastName:state.user.lastName})}).catch(()=>{});
     state.view="home";render();
@@ -1753,10 +1855,24 @@ function renderHome(app){
       <div class="logo"><div class="logo-icon">\ud83c\udf31</div><div class="logo-text"><h1>Vitagri & Bionutrient Institute</h1><p>Predictive Model Learning System</p></div></div>
       ${state.user?`<div style="margin-bottom:10px"><div class="user-badge">\ud83d\udc64 ${state.user.firstName}<a href="#" id="logout">Log out</a></div></div>`:""}
       <div class="subtitle" style="margin-bottom:24px">12 modules from basic foundations to smartie-pants \u2014 complete each quiz at 80%+ to unlock the next level</div>
-      <div class="progress-box"><div class="progress-row"><span class="progress-label">Overall Progress</span><span class="progress-count">${state.completed.length}/${modules.length} modules</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+      <div class="progress-box">
+        <div class="progress-row"><span class="progress-label">Overall Progress</span><span class="progress-count">${state.completed.length}/${modules.length} modules</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-row" style="margin-top:8px"><span class="progress-label">\u2b50 Points: <strong style="color:${C.amber}">${state.points}</strong></span><span class="progress-count" id="home-timer">\u23f1 ${getElapsedTime()}</span></div>
+        ${state.completed.length>=modules.length?`<div style="margin-top:10px;text-align:center"><button id="restart-course" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.7);border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer">\u21bb Restart Course (improve your score)</button></div>`:""}
+      </div>
+      <div style="margin-top:10px;text-align:center"><button id="show-leaderboard" class="lb-btn">\ud83c\udfc6 Leaderboard</button></div>
     </div></div>
     <div class="container"><div class="module-grid" id="module-grid"></div></div>`;
   document.getElementById('logout')?.addEventListener('click',e=>{e.preventDefault();localStorage.removeItem('vpm_user');state.user=null;state.view="login";render()});
+  document.getElementById('restart-course')?.addEventListener('click',()=>{
+    if(confirm('Restart the course? Your best score is saved on the leaderboard. This resets your progress to try for a better score and time.')){
+      state.completed=[];state.scores={};state.points=0;state.startTime=new Date().toISOString();state.endTime=null;
+      saveCompleted();saveScores();savePoints();saveTimer();
+      localStorage.removeItem('vpm_endTime');render();
+    }
+  });
+  document.getElementById('show-leaderboard')?.addEventListener('click',showLeaderboard);
   const grid=document.getElementById('module-grid');
   modules.forEach((mod,i)=>{
     const unlocked=i===0||state.completed.includes(modules[i-1].id);
@@ -1784,12 +1900,7 @@ function renderStudy(app){
       <div class="title">${mod.icon} ${mod.title}</div>
       <button class="btn-teal" id="go-quiz">Take Quiz \u2192</button>
     </div></div>
-    <div class="progress-tracker"><div class="container"><div class="inner">
-      <div class="pt-stat"><strong>${getProgressStats().done}/${getProgressStats().totalMods}</strong> done</div>
-      <div class="pt-bar"><div class="pt-fill" style="width:${getProgressStats().pct}%"></div></div>
-      <div class="pt-stat">Avg score: <strong>${getProgressStats().avgScore}%</strong></div>
-      <div class="pt-stat">Section <strong>${state.currentSection+1}/${mod.sections.length}</strong></div>
-    </div></div></div>
+    ${progressTrackerHTML(true,mod)}
     </div>
     <div class="container">
       <div class="section-nav" id="sec-nav"></div>
@@ -1847,8 +1958,20 @@ function renderQuiz(app){
     const independent=mod.quiz.filter((_,i)=>state.quizAnswers[i]===mod.quiz[i].correct&&!state.helps[i]).length;
     const passed=independent/mod.quiz.length>=.8;
     state.scores[mod.id]=Math.round(independent/mod.quiz.length*100);saveScores();
+    const modulePoints=calcModulePoints(mod);state.points+=modulePoints;savePoints();
+    const isPerfect=totalCorrect===mod.quiz.length&&Object.keys(state.hints).length===0&&Object.keys(state.helps).length===0;
+    if(passed){
+      if(isPerfect)launchCelebration(200,6000);else launchCelebration(60,3000);
+    }
     if(passed&&!state.completed.includes(mod.id)){
       state.completed.push(mod.id);saveCompleted();
+      if(state.completed.length>=modules.length){state.endTime=new Date().toISOString();saveTimer();
+        if(state.points>state.bestPoints||(state.points===state.bestPoints&&getElapsedSeconds()<(state.bestTime?parseInt(state.bestTime):Infinity))){
+          state.bestPoints=state.points;state.bestTime=String(getElapsedSeconds());
+          localStorage.setItem('vpm_bestPoints',String(state.bestPoints));localStorage.setItem('vpm_bestTime',state.bestTime);
+          fetch('/.netlify/functions/leaderboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:state.user.firstName+' '+state.user.lastName,org:state.user.org||'',points:state.points,timeSeconds:getElapsedSeconds(),time:getElapsedTime(),email:state.user.email,modulesCompleted:state.completed.length,date:new Date().toISOString().split('T')[0]})}).catch(()=>{});
+        }
+      }
       if(state.user&&state.user.email){
         const done=state.completed.length;const total=modules.length;
         if(done>=total){
@@ -1865,11 +1988,7 @@ function renderQuiz(app){
         <div class="title">Quiz: ${mod.title}</div>
         <div style="color:${C.amber};font-size:12px">${answered}/${mod.quiz.length} answered</div>
       </div></div>
-      <div class="progress-tracker"><div class="container"><div class="inner">
-        <div class="pt-stat"><strong>${getProgressStats().done}/${getProgressStats().totalMods}</strong> done</div>
-        <div class="pt-bar"><div class="pt-fill" style="width:${getProgressStats().pct}%"></div></div>
-        <div class="pt-stat">Avg score: <strong>${getProgressStats().avgScore}%</strong></div>
-      </div></div></div>
+      ${progressTrackerHTML(false)}
       </div>
       <div class="container" style="padding-top:28px;padding-bottom:60px">
         <div class="quiz-result ${passed?"passed":"failed"}">
@@ -1877,6 +1996,11 @@ function renderQuiz(app){
           <div class="quiz-score" style="color:${passed?C.teal:C.berry}">${independent}/${mod.quiz.length}</div>
           <div style="font-size:16px;font-weight:700;color:${C.soil};margin-bottom:4px" class="${passed&&mod.id===12?"celebrate-text":""}">${passed?(mod.id===12?"\ud83c\udf89\ud83c\udf8a Congratulations! You\u2019ve completed the Vitagri & Bionutrient Institute Predictive Model Qualification! \ud83c\udf8a\ud83c\udf89":"Module Passed! \u2713"):"Keep Studying \u2014 you need 80%"}</div>
           <div style="font-size:13px;color:${C.grey};margin-bottom:4px">Independent score: ${(independent/mod.quiz.length*100).toFixed(0)}% ${passed?"":"(need 80%)"}</div>
+          <div class="points-breakdown">
+            <span class="points-earned">\u2b50 +${modulePoints} points this module</span>
+            ${isPerfect?`<span class="points-earned">\ud83c\udf1f PERFECT \u2014 DOUBLE POINTS!</span>`:""}
+            <div style="margin-top:6px;font-size:11px;color:${C.grey}">Total: <strong style="color:${C.amber}">${state.points} points</strong> \u00b7 Time: <strong>${getElapsedTime()}</strong></div>
+          </div>
           ${helpsUsed>0?`<div style="font-size:12px;margin-top:4px"><span style="background:${C.berry};color:${C.white};font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px">Help used: ${helpsUsed}/${mod.quiz.length}</span> <span style="color:${C.grey};font-size:11px;margin-left:4px">\u2014 these don\u2019t count towards your pass score</span></div>`:""}
           ${hintsUsed>0?`<div style="font-size:11px;color:${C.amber};margin-top:4px">Hints used: ${hintsUsed}</div>`:""}
           <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap">
@@ -1929,11 +2053,7 @@ function renderQuiz(app){
         <div class="title">Quiz: ${mod.title}</div>
         <div style="color:${C.amber};font-size:12px">${answered}/${mod.quiz.length} answered</div>
       </div></div>
-      <div class="progress-tracker"><div class="container"><div class="inner">
-        <div class="pt-stat"><strong>${getProgressStats().done}/${getProgressStats().totalMods}</strong> done</div>
-        <div class="pt-bar"><div class="pt-fill" style="width:${getProgressStats().pct}%"></div></div>
-        <div class="pt-stat">Avg score: <strong>${getProgressStats().avgScore}%</strong></div>
-      </div></div></div>
+      ${progressTrackerHTML(false)}
       </div>
       <div class="container" style="padding-top:28px;padding-bottom:60px"><div id="quiz-questions"></div>
         <div style="text-align:center;margin-top:20px">
@@ -1950,7 +2070,7 @@ function renderQuiz(app){
         const btn=document.createElement('button');
         btn.className=`quiz-opt ${state.quizAnswers[i]===j?"selected":""}`;
         btn.textContent=opt;
-        btn.addEventListener('click',()=>{if(!state.helps[i]){state.quizAnswers[i]=j;render();}});
+        btn.addEventListener('click',()=>{if(!state.helps[i]){state.quizAnswers[i]=j;if(j===q.correct)showEncouragement(encouragements[Math.floor(Math.random()*encouragements.length)]);render();}});
         div.appendChild(btn);
       });
       // Hint + Help buttons row
@@ -1959,13 +2079,13 @@ function renderQuiz(app){
       if(q.hint&&!state.hints[i]&&!state.helps[i]){
         const hintBtn=document.createElement('button');
         hintBtn.className='btn-hint';hintBtn.textContent='\ud83d\udca1 Hint';
-        hintBtn.addEventListener('click',()=>{state.hints[i]=true;render()});
+        hintBtn.addEventListener('click',()=>{if(confirm('Using a Hint costs 5 points. Continue?')){state.hints[i]=true;render()}});
         row.appendChild(hintBtn);
       }
       if(q.explanation&&!state.helps[i]){
         const helpBtn=document.createElement('button');
         helpBtn.className='btn-help';helpBtn.textContent='\ud83c\udd98 Help, I\u2019ve no idea';
-        helpBtn.addEventListener('click',()=>{state.helps[i]=true;state.hints[i]=true;state.quizAnswers[i]=q.correct;render()});
+        helpBtn.addEventListener('click',()=>{if(confirm('Using Help costs 20 points and the answer will be revealed. Continue?')){state.helps[i]=true;state.hints[i]=true;state.quizAnswers[i]=q.correct;render()}});
         row.appendChild(helpBtn);
       }
       div.appendChild(row);
