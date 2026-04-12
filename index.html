@@ -220,6 +220,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   .jargon-popup{width:220px;font-size:11px}
 }
 
+/* Fixed Pulse Widget */
+.pulse-fab{position:fixed;bottom:20px;right:20px;z-index:500;display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none}
+.pulse-fab>*{pointer-events:auto}
+.pulse-fab-btn{width:56px;height:56px;border-radius:50%;background:var(--teal);border:none;box-shadow:0 4px 20px rgba(42,157,143,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
+.pulse-fab-btn:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(42,157,143,.5)}
+.pulse-fab-btn.open{background:var(--soil)}
+.pulse-fab-label{position:absolute;right:66px;top:50%;transform:translateY(-50%);background:var(--soil);color:var(--white);font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.2);opacity:0;transition:opacity .3s;pointer-events:none}
+.pulse-fab-btn:not(.open):hover .pulse-fab-label{opacity:1}
+.pulse-panel{width:360px;max-height:500px;background:var(--white);border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden;display:none;flex-direction:column}
+.pulse-panel.show{display:flex}
+@media(max-width:420px){.pulse-panel{width:calc(100vw - 24px);max-height:70vh}.pulse-fab{bottom:12px;right:12px}}
+
 /* Animations */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -1863,6 +1875,88 @@ function renderQuiz(app){
 
 // ─── BOOT ──────────────────────────────────────────────────────
 render();
+
+// ─── GLOBAL PULSE FLOATING WIDGET ─────────────────────────────
+(function(){
+  const fab=document.createElement('div');fab.className='pulse-fab';fab.id='pulse-fab';
+  fab.innerHTML=`
+    <div class="pulse-panel" id="gp-panel">
+      <div style="background:${C.soil};padding:12px 16px;display:flex;align-items:center;gap:10px">
+        <div style="width:30px;height:30px;border-radius:8px;background:${C.teal};display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M12 3C8.5 3 6 5.7 6 9c0 2.4 1.3 4.5 3.2 5.7V19h5.6v-4.3C16.7 13.5 18 11.4 18 9c0-3.3-2.5-6-6-6z" fill="white" opacity="0.9"/><circle cx="12" cy="9.5" r="2" fill="${C.teal}"/></svg>
+        </div>
+        <div style="flex:1"><div style="color:${C.white};font-weight:700;font-size:12px">Vitagri \u2014 Pulse</div><div style="color:rgba(255,255,255,.5);font-size:10px">Ask any question about farming for health</div></div>
+        <button id="gp-close" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;padding:0 4px">\u2715</button>
+      </div>
+      <div id="gp-messages" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:200px;max-height:340px"></div>
+      <div style="display:flex;border-top:1px solid ${C.lgrey};padding:8px;gap:6px;align-items:flex-end">
+        <input type="text" id="gp-input" placeholder="Ask about farming, nutrition, soil health\u2026" style="flex:1;border:none;padding:10px 12px;font-size:13px;font-family:inherit;outline:none">
+        <button id="gp-send" style="background:${C.teal};border:none;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer">
+          <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M3 10h12M11 6l6 4-6 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div style="padding:6px 12px 10px;font-size:9px;color:${C.grey};text-align:center">Powered by Claude AI \u00b7 Grounded in 1,000+ peer-reviewed studies</div>
+    </div>
+    <button class="pulse-fab-btn" id="gp-toggle">
+      <span class="pulse-fab-label">Ask for help or any question about farming for health</span>
+      <svg viewBox="0 0 24 24" fill="none" width="26" height="26"><path d="M12 3C8.5 3 6 5.7 6 9c0 2.4 1.3 4.5 3.2 5.7V19h5.6v-4.3C16.7 13.5 18 11.4 18 9c0-3.3-2.5-6-6-6z" fill="white" opacity="0.9"/><circle cx="12" cy="9.5" r="2" fill="${C.teal}"/></svg>
+    </button>`;
+  document.body.appendChild(fab);
+
+  let gpOpen=false,gpMessages=[],gpSending=false;
+  const panel=document.getElementById('gp-panel');
+  const toggle=document.getElementById('gp-toggle');
+  const close=document.getElementById('gp-close');
+  const msgArea=document.getElementById('gp-messages');
+  const input=document.getElementById('gp-input');
+  const send=document.getElementById('gp-send');
+
+  // Show welcome on first open
+  function gpInit(){
+    if(gpMessages.length===0){
+      gpMessages.push({role:"assistant",content:"Hello! I\u2019m Vitagri \u2014 Pulse. Ask me anything about farming for health, nutrient density, soil science, or the predictive model. How can I help?"});
+      gpRenderMessages();
+    }
+  }
+
+  toggle.addEventListener('click',()=>{
+    gpOpen=!gpOpen;
+    panel.classList.toggle('show',gpOpen);
+    toggle.classList.toggle('open',gpOpen);
+    toggle.querySelector('svg').style.display=gpOpen?'none':'block';
+    toggle.innerHTML=gpOpen?`<span style="color:${C.white};font-size:20px">\u2715</span>`:
+      `<span class="pulse-fab-label">Ask for help or any question about farming for health</span><svg viewBox="0 0 24 24" fill="none" width="26" height="26"><path d="M12 3C8.5 3 6 5.7 6 9c0 2.4 1.3 4.5 3.2 5.7V19h5.6v-4.3C16.7 13.5 18 11.4 18 9c0-3.3-2.5-6-6-6z" fill="white" opacity="0.9"/><circle cx="12" cy="9.5" r="2" fill="${C.teal}"/></svg>`;
+    if(gpOpen){gpInit();input.focus()}
+  });
+  close.addEventListener('click',()=>{toggle.click()});
+
+  function gpRenderMessages(){
+    msgArea.innerHTML=gpMessages.map(m=>`<div style="display:flex;justify-content:${m.role==="user"?"flex-end":"flex-start"}"><div style="max-width:85%;padding:10px 14px;border-radius:12px;font-size:12px;line-height:1.6;word-wrap:break-word;${m.role==="user"?`background:${C.teal};color:${C.white};border-bottom-right-radius:4px`:`background:#f0f4f2;color:${C.soil};border-bottom-left-radius:4px`}">${m.content.replace(/\n/g,"<br>")}</div></div>`).join("")
+      +(gpSending?`<div style="display:flex"><div style="padding:10px 14px;background:#f0f4f2;border-radius:12px;border-bottom-left-radius:4px"><span style="display:flex;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:${C.teal};animation:p-dot 1.2s infinite;display:inline-block"></span><span style="width:6px;height:6px;border-radius:50%;background:${C.teal};animation:p-dot 1.2s .2s infinite;display:inline-block"></span><span style="width:6px;height:6px;border-radius:50%;background:${C.teal};animation:p-dot 1.2s .4s infinite;display:inline-block"></span></span></div></div>`:"");
+    msgArea.scrollTop=msgArea.scrollHeight;
+  }
+
+  async function gpSendMessage(){
+    const text=input.value.trim();if(!text||gpSending)return;
+    gpMessages.push({role:"user",content:text});
+    input.value="";gpSending=true;gpRenderMessages();
+    try{
+      const resp=await fetch('/.netlify/functions/pulse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:gpMessages.slice(0,-1)})});
+      const data=await resp.json();
+      gpMessages.push({role:"assistant",content:data.response||"Sorry, please try again."});
+    }catch(e){gpMessages.push({role:"assistant",content:"I\u2019m currently unavailable. Please try again shortly."});}
+    gpSending=false;gpRenderMessages();input.focus();
+  }
+  send.addEventListener('click',gpSendMessage);
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')gpSendMessage()});
+
+  // Inject typing animation if not already present
+  if(!document.getElementById('pulse-dot-style')){const s=document.createElement('style');s.id='pulse-dot-style';s.textContent='@keyframes p-dot{0%,60%,100%{opacity:.2;transform:scale(.9)}30%{opacity:1;transform:scale(1.15)}}';document.head.appendChild(s)}
+
+  // Hide on intro/login pages, show everywhere else
+  const origRender=render;
+  window.render=function(){origRender();const f=document.getElementById('pulse-fab');if(f)f.style.display=(state.view==='intro'||state.view==='login')?'none':'flex'};
+})();
 
 /*
  * ═══════════════════════════════════════════════════════════════
