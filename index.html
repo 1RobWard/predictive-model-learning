@@ -1468,12 +1468,12 @@ const modules=[
     {q:"What does 'dummy encoding' do to a categorical variable?",options:["Converts it to a decimal number","Splits it into multiple binary (0/1) columns","Removes it from the analysis","Calculates its correlation"],correct:1,hint:"Models need numbers, not text labels. How do you represent three tillage types numerically?",explanation:"Dummy encoding creates a separate binary (0/1) column for each category. Tillage with three levels becomes two columns: \u2018is_min_till\u2019 and \u2018is_conventional\u2019 (no-till is the reference when both are 0). This lets the model treat each category independently."},
   ]},
   {id:3,title:"Statistics Foundations",icon:"\ud83d\udcd0",sections:[
-    {heading:"Distributions \u2014 What Does Your Data Look Like?",visual:"bell",
+    {heading:"Distributions \u2014 What Does Your Data Look Like?",visual:"bell",bodyFirst:true,
      body:"Before choosing a statistical model, you need to understand the distribution of your outcome variable. Iron content across farms typically follows a roughly normal distribution \u2014 most farms cluster around the average, with fewer at the extremes. However, some nutrient variables (like specific polyphenols) are right-skewed. Skewed distributions often need log-transformation before modelling \u2014 this simply means converting the values using a mathematical function (the logarithm) that compresses the large values and spreads out the small ones, making the data more symmetrical and easier for the model to work with."},
-    {heading:"Correlation \u2014 How Variables Relate",visual:"corr",
+    {heading:"Correlation \u2014 How Variables Relate",visual:"corr",bodyFirst:true,
      analogy:"Umbrellas and rain: when you see lots of umbrellas, it\u2019s probably raining. Umbrellas don\u2019t cause rain \u2014 they\u2019re associated. Correlation measures the strength of these associations.",
      body:"Correlation (Pearson r) measures the strength and direction of the linear relationship between two continuous variables. Drag the slider to explore what different correlation strengths look like visually. Critical warning: correlation does not equal causation. Soil organic matter is correlated with iron, but the mechanism involves complex microbial processes \u2014 not a direct chemical pathway."},
-    {heading:"Regression \u2014 The Foundation of Prediction",visual:"regression",
+    {heading:"Regression \u2014 The Foundation of Prediction",visual:"regression",bodyFirst:true,
      analogy:"Drawing the best straight line through scattered dots on a dartboard using a ruler. The line won\u2019t pass through every dot, but it captures the overall direction.",
      body:"Regression finds the line (or surface in multiple dimensions) that best fits the observed data points. \u2018Best fit\u2019 means minimising the sum of squared residuals \u2014 the vertical distances between each data point and the line. Toggle the residuals button above to see these errors."},
   ],quiz:[
