@@ -424,8 +424,8 @@ async function showLeaderboard(){
       <div style="padding:16px">
         ${entries.length===0?`<div style="text-align:center;padding:40px 20px;color:${C.grey}"><div style="font-size:32px;margin-bottom:8px">\ud83c\udfc6</div><div style="font-size:14px">No entries yet. Be the first to complete the course!</div></div>`:`
         <table class="lb-table">
-          <thead><tr><th>#</th><th>Name</th><th>Organisation</th><th>Points</th><th>Time</th><th>Date</th></tr></thead>
-          <tbody>${entries.map((e,i)=>`<tr class="${e.email===userEmail?'me':''}"><td class="lb-rank">${i+1}</td><td>${e.name}</td><td style="color:${C.grey};font-size:11px">${e.org||'\u2014'}</td><td style="font-weight:700;color:${C.amber}">${e.points}</td><td style="font-family:monospace;font-size:11px">${e.time||'\u2014'}</td><td style="font-size:11px;color:${C.grey}">${e.date||''}</td></tr>`).join('')}</tbody>
+          <thead><tr><th>#</th><th>Name</th><th>Organisation</th><th>Points</th><th>Date</th></tr></thead>
+          <tbody>${entries.map((e,i)=>`<tr class="${e.email===userEmail?'me':''}"><td class="lb-rank">${i+1}</td><td>${e.name}</td><td style="color:${C.grey};font-size:11px">${e.org||'\u2014'}</td><td style="font-weight:700;color:${C.amber}">${e.points}</td><td style="font-size:11px;color:${C.grey}">${e.date||''}</td></tr>`).join('')}</tbody>
         </table>`}
       </div>
     </div>`;
