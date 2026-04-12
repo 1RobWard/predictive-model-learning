@@ -1985,7 +1985,7 @@ function renderQuiz(app){
     app.innerHTML=`
       <div class="study-header"><div class="container"><div class="inner">
         <button class="btn-ghost" id="back-study">\u2190 Back to Study</button>
-        <div class="title">Quiz Dashboard</div>
+        <div class="title">${state.user?state.user.firstName+"\u2019s":""} Quiz Dashboard</div>
         <div style="color:${C.amber};font-size:12px">${answered}/${mod.quiz.length} answered</div>
       </div></div>
       ${progressTrackerHTML(false)}
@@ -2050,7 +2050,7 @@ function renderQuiz(app){
     app.innerHTML=`
       <div class="study-header"><div class="container"><div class="inner">
         <button class="btn-ghost" id="back-study">\u2190 Back to Study</button>
-        <div class="title">Quiz Dashboard</div>
+        <div class="title">${state.user?state.user.firstName+"\u2019s":""} Quiz Dashboard</div>
         <div style="color:${C.amber};font-size:12px">${answered}/${mod.quiz.length} answered</div>
       </div></div>
       ${progressTrackerHTML(false)}
