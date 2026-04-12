@@ -68,13 +68,8 @@ exports.handler = async (event) => {
   }
 
   try {
-    let rawBody = event.body || '';
-    if (event.isBase64Encoded && rawBody) {
-      rawBody = Buffer.from(rawBody, 'base64').toString('utf-8');
-    }
-    if (!rawBody || rawBody.length < 2) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Empty body', bodyLen: rawBody.length, isB64: event.isBase64Encoded, bodyPreview: rawBody.substring(0, 50) }) };
-    }
+    let rawBody = event.body || '{}';
+    if (event.isBase64Encoded) rawBody = Buffer.from(rawBody, 'base64').toString('utf-8');
     const { action, email, firstName, lastName, tags, mergeFields } = JSON.parse(rawBody);
     const subscriberHash = md5(email);
     const listEndpoint = `/lists/${MAILCHIMP_AUDIENCE_ID}`;
