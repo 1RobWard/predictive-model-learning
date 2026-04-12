@@ -23,9 +23,10 @@ async function mailchimpRequest(endpoint, method, body) {
   return { ok: res.ok, status: res.status, data };
 }
 
+const crypto = require('crypto');
+
 // MD5 hash for Mailchimp subscriber lookup
 function md5(str) {
-  const crypto = require('crypto');
   return crypto.createHash('md5').update(str.toLowerCase()).digest('hex');
 }
 
