@@ -1266,45 +1266,75 @@ function renderRoleSelector(el){
 }
 
 function renderPulseChat(el){
-  let messages=[{role:"assistant",content:"Hello! I\u2019m Vitagri \u2014 Pulse \u2014 your AI guide to nutrient-dense agriculture. I\u2019ve been trained on the Vitagri & Bionutrient Institute white paper, the GroundUp Framework, and 3,000+ peer-reviewed studies.\n\nTell me your role (farmer, scientist, agronomist, food business, policy maker, or health professional) and I\u2019ll help you build a personalised action plan for your next steps."}];
+  let messages=[];
   let sending=false;
+  let showStarters=true;
+  const starters=[
+    {icon:"\ud83c\udf31",role:"I\u2019m a Farmer",sub:"Build my personalised toolkit"},
+    {icon:"\ud83e\ude7a",role:"I\u2019m a Nutritionist",sub:"Build my personalised toolkit"},
+    {icon:"\ud83c\udf3e",role:"I\u2019m an Agronomist",sub:"Build my personalised toolkit"},
+    {icon:"\ud83d\udc68\u200d\ud83c\udf73",role:"I\u2019m a Chef",sub:"Build my personalised toolkit"},
+  ];
   function draw(){
     el.innerHTML=`
-      <div style="font-weight:700;color:${C.soil};font-size:13px;margin-bottom:4px">Vitagri \u2014 Pulse AI \u2014 Your Personalised Toolkit</div>
-      <div style="font-size:11px;color:${C.grey};margin-bottom:12px">Ask questions, explore ideas, and build your action plan. Powered by Claude AI, grounded in Vitagri\u2019s research.</div>
-      <div class="chat-wrap">
-        <div class="chat-header"><div class="dot"></div><span style="color:${C.white};font-size:12px;font-weight:600">Vitagri \u2014 Pulse AI</span><span style="color:rgba(255,255,255,.4);font-size:10px;margin-left:auto">Powered by Claude</span></div>
-        <div class="chat-messages" id="pulse-messages">
-          ${messages.map(m=>`<div class="chat-msg ${m.role}">${m.content.replace(/\n/g,'<br>')}</div>`).join("")}
-          ${sending?'<div class="chat-msg typing">Thinking\u2026</div>':""}
+      <div style="background:#f8faf9;border:2px solid #e0ece6;border-radius:16px;overflow:hidden">
+        <div style="background:${C.soil};padding:16px 20px;display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:10px;background:${C.teal};display:flex;align-items:center;justify-content:center">
+            <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 3C8.5 3 6 5.7 6 9c0 2.4 1.3 4.5 3.2 5.7V19h5.6v-4.3C16.7 13.5 18 11.4 18 9c0-3.3-2.5-6-6-6z" fill="white" opacity="0.9"/><circle cx="12" cy="9.5" r="2" fill="${C.teal}"/></svg>
+          </div>
+          <div style="flex:1">
+            <div style="color:${C.white};font-weight:700;font-size:14px">Pulse</div>
+            <div style="color:rgba(255,255,255,.5);font-size:11px">Vitagri Research Guide \u00b7 1,336 peer-reviewed studies</div>
+          </div>
+          <span style="background:${C.teal};color:${C.white};font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px">Free</span>
         </div>
-        <div class="chat-input-row">
-          <input type="text" class="chat-input" id="pulse-input" placeholder="Ask me anything about nutrient-dense agriculture\u2026" ${sending?"disabled":""}>
-          <button class="chat-send" id="pulse-send" ${sending?"disabled":""}>Send</button>
+        ${showStarters?`<div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px" id="pulse-starters">
+          ${starters.map((s,i)=>`<button data-starter="${i}" style="background:${C.white};border:1.5px solid #e0ece6;border-radius:12px;padding:14px;text-align:left;display:flex;align-items:center;gap:10px;transition:all .2s;cursor:pointer;font-family:inherit"><span style="font-size:22px">${s.icon}</span><div><div style="font-size:13px;font-weight:700;color:${C.soil}">${s.role}</div><div style="font-size:11px;color:${C.grey}">${s.sub}</div></div></button>`).join("")}
+        </div>`:""}
+        <div id="pulse-messages" style="display:${messages.length>0?"flex":"none"};flex-direction:column;gap:10px;padding:16px;max-height:360px;overflow-y:auto;min-height:${messages.length>0?"100px":"0"}">
+          ${messages.map(m=>`<div style="display:flex;justify-content:${m.role==="user"?"flex-end":"flex-start"}"><div style="max-width:85%;padding:12px 16px;border-radius:14px;font-size:13px;line-height:1.6;word-wrap:break-word;${m.role==="user"?`background:${C.teal};color:${C.white};border-bottom-right-radius:4px`:`background:${C.white};color:${C.soil};border:1px solid #e0ece6;border-bottom-left-radius:4px`}">${m.content.replace(/\n/g,"<br>")}</div></div>`).join("")}
+          ${sending?`<div style="display:flex"><div style="padding:14px 16px;background:${C.white};border:1px solid #e0ece6;border-radius:14px;border-bottom-left-radius:4px"><span style="display:flex;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:${C.teal};animation:p-dot 1.2s infinite;display:inline-block"></span><span style="width:7px;height:7px;border-radius:50%;background:${C.teal};animation:p-dot 1.2s .2s infinite;display:inline-block"></span><span style="width:7px;height:7px;border-radius:50%;background:${C.teal};animation:p-dot 1.2s .4s infinite;display:inline-block"></span></span></div></div>`:""}
         </div>
+        <div style="display:flex;border-top:1px solid #e0ece6;padding:10px 12px;gap:8px;align-items:flex-end;background:${C.white}">
+          <textarea id="pulse-input" placeholder="Ask about farming, soil health, nutrient density or human health\u2026" rows="1" style="flex:1;border:none;padding:10px 14px;font-size:14px;font-family:inherit;outline:none;background:transparent;resize:none;max-height:120px" ${sending?"disabled":""}></textarea>
+          <button id="pulse-send" style="background:${C.teal};border:none;border-radius:10px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer" ${sending?"disabled":""}>
+            <svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M3 10h12M11 6l6 4-6 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div style="padding:8px 16px 12px;font-size:10px;color:${C.grey};text-align:center;background:${C.white};border-radius:0 0 14px 14px">Pulse draws on peer-reviewed research. Always verify critical decisions with a qualified expert.</div>
       </div>
-      <div style="text-align:center;margin-top:12px">
+      <div style="text-align:center;margin-top:14px">
         <a href="https://vitagri.org/pulse" target="_blank" rel="noopener" style="display:inline-block;background:${C.soil};color:${C.amber};text-decoration:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700">Open full Vitagri Pulse \u2192</a>
       </div>`;
-    const msgArea=document.getElementById('pulse-messages');
-    if(msgArea)msgArea.scrollTop=msgArea.scrollHeight;
+    // Inject typing animation keyframes
+    if(!document.getElementById('pulse-dot-style')){const s=document.createElement('style');s.id='pulse-dot-style';s.textContent='@keyframes p-dot{0%,60%,100%{opacity:.2;transform:scale(.9)}30%{opacity:1;transform:scale(1.15)}}';document.head.appendChild(s)}
+    // Auto-grow textarea
     const input=document.getElementById('pulse-input');
-    const sendBtn=document.getElementById('pulse-send');
-    async function send(){
-      const text=input?.value?.trim();
-      if(!text||sending)return;
-      messages.push({role:"user",content:text});
-      sending=true;draw();
-      try{
-        const resp=await fetch('/.netlify/functions/pulse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:messages.slice(0,-1)})});
-        const data=await resp.json();
-        messages.push({role:"assistant",content:data.response||"Sorry, I couldn\u2019t process that. Please try again."});
-      }catch(e){messages.push({role:"assistant",content:"I\u2019m currently unavailable. Please try the full Vitagri Pulse at vitagri.org/pulse."});}
-      sending=false;draw();
-    }
-    sendBtn?.addEventListener('click',send);
-    input?.addEventListener('keydown',e=>{if(e.key==='Enter')send()});
+    input?.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,120)+'px'});
+    // Scroll messages
+    const msgArea=document.getElementById('pulse-messages');
+    if(msgArea&&messages.length>0)msgArea.scrollTop=msgArea.scrollHeight;
+    // Starter buttons
+    el.querySelectorAll('[data-starter]').forEach(btn=>btn.addEventListener('click',()=>{
+      const s=starters[+btn.dataset.starter];
+      sendMessage(s.role+", "+s.sub.toLowerCase());
+    }));
+    // Send button + Enter
+    document.getElementById('pulse-send')?.addEventListener('click',()=>sendMessage(input?.value?.trim()));
+    input?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage(input?.value?.trim())}});
     input?.focus();
+  }
+  async function sendMessage(text){
+    if(!text||sending)return;
+    showStarters=false;
+    messages.push({role:"user",content:text});
+    sending=true;draw();
+    try{
+      const resp=await fetch('/.netlify/functions/pulse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:messages.slice(0,-1)})});
+      const data=await resp.json();
+      messages.push({role:"assistant",content:data.response||"Sorry, I couldn\u2019t process that. Please try again."});
+    }catch(e){messages.push({role:"assistant",content:"I\u2019m currently unavailable. Please try the full Vitagri Pulse at vitagri.org/pulse."});}
+    sending=false;draw();
   }
   draw();
 }
