@@ -225,6 +225,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeIn .3s ease}
 @keyframes countUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+@keyframes celebratePulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+.confetti-wrap{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
+.confetti-piece{position:absolute;top:-20px;width:12px;height:12px;border-radius:2px;animation:confettiFall linear forwards}
+.celebrate-text{animation:celebratePulse 1s ease infinite}
 </style>
 </head>
 <body>
@@ -314,6 +319,21 @@ function attachJargonHandlers(container){
     });
   });
   document.addEventListener('click',()=>document.querySelectorAll('.jargon-popup').forEach(p=>p.remove()),{once:false});
+}
+
+// ─── CELEBRATION CONFETTI ──────────────────────────────────────
+function launchCelebration(){
+  const wrap=document.createElement('div');wrap.className='confetti-wrap';document.body.appendChild(wrap);
+  const colors=[C.teal,C.amber,C.berry,C.lime,'#ff6b6b','#ffd93d','#6bcb77','#4d96ff'];
+  const shapes=['square','circle'];
+  for(let i=0;i<120;i++){
+    const piece=document.createElement('div');piece.className='confetti-piece';
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    const shape=shapes[Math.floor(Math.random()*shapes.length)];
+    piece.style.cssText=`left:${Math.random()*100}%;background:${col};width:${8+Math.random()*10}px;height:${8+Math.random()*10}px;border-radius:${shape==='circle'?'50%':'2px'};animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*1.5}s;opacity:0.9`;
+    wrap.appendChild(piece);
+  }
+  setTimeout(()=>wrap.remove(),6000);
 }
 
 // ─── GOOGLE APPS SCRIPT ENDPOINT ──────────────────────────────
@@ -1246,14 +1266,14 @@ function renderRoleSelector(el){
 }
 
 function renderPulseChat(el){
-  let messages=[{role:"assistant",content:"Hello! I\u2019m Vitagri Pulse \u2014 your AI guide to nutrient-dense agriculture. I\u2019ve been trained on the Vitagri & Bionutrient Institute white paper, the GroundUp Framework, and 3,000+ peer-reviewed studies.\n\nTell me your role (farmer, scientist, agronomist, food business, policy maker, or health professional) and I\u2019ll help you build a personalised action plan for your next steps."}];
+  let messages=[{role:"assistant",content:"Hello! I\u2019m Vitagri \u2014 Pulse \u2014 your AI guide to nutrient-dense agriculture. I\u2019ve been trained on the Vitagri & Bionutrient Institute white paper, the GroundUp Framework, and 3,000+ peer-reviewed studies.\n\nTell me your role (farmer, scientist, agronomist, food business, policy maker, or health professional) and I\u2019ll help you build a personalised action plan for your next steps."}];
   let sending=false;
   function draw(){
     el.innerHTML=`
-      <div style="font-weight:700;color:${C.soil};font-size:13px;margin-bottom:4px">Claude Pulse AI \u2014 Your Personalised Toolkit</div>
+      <div style="font-weight:700;color:${C.soil};font-size:13px;margin-bottom:4px">Vitagri \u2014 Pulse AI \u2014 Your Personalised Toolkit</div>
       <div style="font-size:11px;color:${C.grey};margin-bottom:12px">Ask questions, explore ideas, and build your action plan. Powered by Claude AI, grounded in Vitagri\u2019s research.</div>
       <div class="chat-wrap">
-        <div class="chat-header"><div class="dot"></div><span style="color:${C.white};font-size:12px;font-weight:600">Vitagri Pulse AI</span><span style="color:rgba(255,255,255,.4);font-size:10px;margin-left:auto">Powered by Claude</span></div>
+        <div class="chat-header"><div class="dot"></div><span style="color:${C.white};font-size:12px;font-weight:600">Vitagri \u2014 Pulse AI</span><span style="color:rgba(255,255,255,.4);font-size:10px;margin-left:auto">Powered by Claude</span></div>
         <div class="chat-messages" id="pulse-messages">
           ${messages.map(m=>`<div class="chat-msg ${m.role}">${m.content.replace(/\n/g,'<br>')}</div>`).join("")}
           ${sending?'<div class="chat-msg typing">Thinking\u2026</div>':""}
@@ -1488,8 +1508,8 @@ const modules=[
      body:"You\u2019ve now completed the technical journey \u2014 from data foundations through GLMM, XGBoost, metabolomics, and the bidirectional architecture. But the technology is not the point. The point is what it makes possible: a world where farming is measured, verified, and rewarded for producing food that genuinely nourishes people. The GroundUp Framework above is Vitagri & Bionutrient Institute\u2019s 7-point plan to make this real. Click each point to explore the targets and timelines. At its heart is a simple principle: Measure what matters, Validate what works, Reward what\u2019s proven. This is not about labels or marketing \u2014 it\u2019s about building the infrastructure so that doing the right thing is commercially rational for every farmer in the system."},
     {heading:"Your Role in the Revolution",visual:"roles",
      body:"The food system is not changed by any single group working alone. It requires farmers willing to measure and share data, scientists willing to publish all results (positive and negative), agronomists bridging the gap between evidence and practice, food businesses willing to pay premiums for verified quality, health professionals connecting diet quality to health outcomes, and policy makers embedding nutrient metrics into public procurement and land management schemes. The role selector above shows specific actions for each group. The critical insight is that every role depends on every other: farmers need markets, markets need evidence, evidence needs data, data needs farmers. This circular dependency is exactly what the GroundUp Framework is designed to catalyse. When the loop is complete, the virtuous cycle begins: more participants generate more data, better models, more credible certifications, and ultimately a food system that rewards nutrition, not just volume."},
-    {heading:"Your Personalised Next Steps \u2014 Claude Pulse AI",visual:"pulse",
-     body:"You\u2019ve learned the science. Now it\u2019s time to act. Claude Pulse is your AI-powered guide, trained on the Vitagri & Bionutrient Institute white paper (covering 3,000+ peer-reviewed studies), the GroundUp Framework, and the predictive model methodology you\u2019ve just studied. Tell Pulse your role, your context, and your questions \u2014 and it will help you build a personalised action plan for your next steps. Whether you\u2019re a farmer wanting to understand what soil health changes would most improve your nutrient density scores, a scientist looking to collaborate on trials, or a food business exploring procurement pathways \u2014 Pulse can help you find your starting point. Growing Health Together starts with one step. Take yours now."},
+    {heading:"Your Personalised Next Steps \u2014 Vitagri \u2014 Pulse AI",visual:"pulse",
+     body:"You\u2019ve learned the science. Now it\u2019s time to act. Vitagri \u2014 Pulse is your AI-powered guide, trained on the Vitagri & Bionutrient Institute white paper (covering 3,000+ peer-reviewed studies), the GroundUp Framework, and the predictive model methodology you\u2019ve just studied. Tell Pulse your role, your context, and your questions \u2014 and it will help you build a personalised action plan for your next steps. Whether you\u2019re a farmer wanting to understand what soil health changes would most improve your nutrient density scores, a scientist looking to collaborate on trials, or a food business exploring procurement pathways \u2014 Pulse can help you find your starting point. Growing Health Together starts with one step. Take yours now."},
   ],quiz:[
     {q:"The GroundUp Framework consists of how many interconnected points?",options:["5 points","7 points","10 points","12 points"],correct:1,hint:"Count the points in the interactive wheel above.",explanation:"The GroundUp Framework has 7 interconnected points: Measure What Matters, Reward What Works, Build the Evidence Base, Connect Farm to Fork to Health, Democratise Access, Create Trusted Standards, and Scale Through Collaboration."},
     {q:"What is the core operating principle behind Vitagri & Bionutrient Institute\u2019s approach?",options:["Organic certification for all farms","Measure, Validate, Reward","Maximum crop yield optimisation","Government regulation of food quality"],correct:1,hint:"Three words that describe the entire framework cycle.",explanation:"Measure, Validate, Reward is the core cycle: measure soil health and nutrient density with standardised protocols, validate the link between farming practices and outcomes through rigorous evidence, and reward farmers who produce verified nutrient-dense food through market premiums and recognition."},
@@ -1661,7 +1681,7 @@ function renderStudy(app){
         ${!sec.bodyFirst?`<p class="section-body">${applyJargon(sec.body)}</p>`:""}
         <div class="section-footer">
           ${state.currentSection>0?`<button class="pill" id="prev-sec" style="border-color:${C.teal};color:${C.teal};padding:8px 18px">\u2190 Previous</button>`:'<div></div>'}
-          ${state.currentSection<mod.sections.length-1?`<button class="btn-teal" id="next-sec" style="padding:8px 20px">Next Section \u2192</button>`:`<button class="btn-amber" id="start-quiz">Start Quiz \u2192</button>`}
+          ${state.currentSection<mod.sections.length-1?`<button class="btn-teal" id="next-sec" style="padding:8px 20px">Next Section \u2192</button>`:`<button class="btn-amber" id="start-quiz">${mod.id===12?"Confirm passing your qualification \u2192":"Start Quiz \u2192"}</button>`}
         </div>
       </div>
     </div>`;
@@ -1716,7 +1736,7 @@ function renderQuiz(app){
         <div class="quiz-result ${passed?"passed":"failed"}">
           <div style="font-size:48px;margin-bottom:8px">${passed?"\ud83c\udf89":"\ud83d\udcda"}</div>
           <div class="quiz-score" style="color:${passed?C.teal:C.berry}">${independent}/${mod.quiz.length}</div>
-          <div style="font-size:16px;font-weight:700;color:${C.soil};margin-bottom:4px">${passed?"Module Passed! \u2713":"Keep Studying \u2014 you need 80%"}</div>
+          <div style="font-size:16px;font-weight:700;color:${C.soil};margin-bottom:4px" class="${passed&&mod.id===12?"celebrate-text":""}">${passed?(mod.id===12?"\ud83c\udf89\ud83c\udf8a Congratulations! You\u2019ve completed the Vitagri & Bionutrient Institute Predictive Model Qualification! \ud83c\udf8a\ud83c\udf89":"Module Passed! \u2713"):"Keep Studying \u2014 you need 80%"}</div>
           <div style="font-size:13px;color:${C.grey};margin-bottom:4px">Independent score: ${(independent/mod.quiz.length*100).toFixed(0)}% ${passed?"":"(need 80%)"}</div>
           ${helpsUsed>0?`<div style="font-size:12px;margin-top:4px"><span style="background:${C.berry};color:${C.white};font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px">Help used: ${helpsUsed}/${mod.quiz.length}</span> <span style="color:${C.grey};font-size:11px;margin-left:4px">\u2014 these don\u2019t count towards your pass score</span></div>`:""}
           ${hintsUsed>0?`<div style="font-size:11px;color:${C.amber};margin-top:4px">Hints used: ${hintsUsed}</div>`:""}
@@ -1759,7 +1779,7 @@ function renderQuiz(app){
       </div></div></div>
       <div class="container" style="padding-top:28px;padding-bottom:60px"><div id="quiz-questions"></div>
         <div style="text-align:center;margin-top:20px">
-          <button class="btn-teal" id="submit-quiz" style="padding:12px 32px;font-size:14px;opacity:${answered===mod.quiz.length?1:.5}" ${answered<mod.quiz.length?"disabled":""}>Submit Quiz</button>
+          <button class="btn-teal" id="submit-quiz" style="padding:12px 32px;font-size:14px;opacity:${answered===mod.quiz.length?1:.5}" ${answered<mod.quiz.length?"disabled":""}>${mod.id===12?"Send your answers to confirm qualification":"Submit Quiz"}</button>
           ${answered<mod.quiz.length?`<div style="font-size:11px;color:${C.grey};margin-top:8px">Answer all ${mod.quiz.length} questions to submit</div>`:""}
         </div>
       </div>`;
@@ -1805,7 +1825,7 @@ function renderQuiz(app){
       }
       container.appendChild(div);
     });
-    document.getElementById('submit-quiz')?.addEventListener('click',()=>{if(answered===mod.quiz.length){state.submitted=true;render();window.scrollTo(0,0)}});
+    document.getElementById('submit-quiz')?.addEventListener('click',()=>{if(answered===mod.quiz.length){state.submitted=true;if(mod.id===12)launchCelebration();render();window.scrollTo(0,0)}});
     document.getElementById('back-study')?.addEventListener('click',()=>{state.quizMode=false;render()});
   }
 }
