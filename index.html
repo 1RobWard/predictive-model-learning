@@ -240,6 +240,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   .quiz-score{font-size:36px}
 }
 
+/* Progress Tracker */
+.progress-tracker{background:var(--soil);padding:8px 0;border-top:1px solid rgba(255,255,255,.06)}
+.progress-tracker .inner{display:flex;align-items:center;gap:12px;font-size:11px}
+.pt-bar{flex:1;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.pt-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .4s ease}
+.pt-stat{color:rgba(255,255,255,.5);white-space:nowrap}
+.pt-stat strong{color:var(--amber);font-weight:700}
+@media(max-width:600px){.progress-tracker .inner{gap:8px;font-size:10px}.pt-stat{font-size:9px}}
+
 /* Fixed Pulse Widget */
 .pulse-fab{position:fixed;bottom:20px;right:20px;z-index:500;display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none}
 .pulse-fab>*{pointer-events:auto}
@@ -384,9 +393,20 @@ const state={
   user:JSON.parse(localStorage.getItem('vpm_user')||'null'),
   currentModuleId:null,currentSection:0,quizMode:false,
   quizAnswers:{},hints:{},helps:{},submitted:false,
-  completed:JSON.parse(localStorage.getItem('vpm_completed')||'[]')
+  completed:JSON.parse(localStorage.getItem('vpm_completed')||'[]'),
+  scores:JSON.parse(localStorage.getItem('vpm_scores')||'{}')
 };
 function saveCompleted(){localStorage.setItem('vpm_completed',JSON.stringify(state.completed))}
+function saveScores(){localStorage.setItem('vpm_scores',JSON.stringify(state.scores))}
+function getProgressStats(){
+  const totalMods=modules.length;
+  const done=state.completed.length;
+  const pct=Math.round(done/totalMods*100);
+  const scoreVals=Object.values(state.scores);
+  const avgScore=scoreVals.length>0?Math.round(scoreVals.reduce((a,b)=>a+b,0)/scoreVals.length):0;
+  const currentIdx=state.currentModuleId!==null?modules.findIndex(m=>m.id===state.currentModuleId):-1;
+  return{totalMods,done,pct,avgScore,currentIdx};
+}
 
 // ─── VISUAL RENDERERS ──────────────────────────────────────────
 function renderBiDirectionalFlow(el){
@@ -1716,7 +1736,7 @@ function renderHome(app){
       ${done?'<div class="module-badge done-badge">\u2713 DONE</div>':''}
       ${!unlocked?'<div class="module-badge lock-badge">\ud83d\udd12</div>':''}
       <div class="module-icon">${mod.icon}</div>
-      <div class="module-label">Module ${mod.id}</div>
+      <div class="module-label">${mod.id===0?"Foundation Learning":"Module "+mod.id}</div>
       <div class="module-title">${mod.title}</div>
       <div class="module-meta">${mod.sections.length} sections \u00b7 ${mod.quiz.length} quiz questions</div>`;
     if(unlocked)card.addEventListener('click',()=>{state.currentModuleId=mod.id;state.currentSection=0;state.quizMode=false;state.quizAnswers={};state.submitted=false;state.view="study";trackEvent({event:"module_start",moduleId:mod.id,moduleName:mod.title});render();window.scrollTo(0,0)});
@@ -1732,7 +1752,14 @@ function renderStudy(app){
       <button class="btn-ghost" id="back-home">\u2190 All Modules</button>
       <div class="title">${mod.icon} ${mod.title}</div>
       <button class="btn-teal" id="go-quiz">Take Quiz \u2192</button>
+    </div></div>
+    <div class="progress-tracker"><div class="container"><div class="inner">
+      <div class="pt-stat"><strong>${getProgressStats().done}/${getProgressStats().totalMods}</strong> done</div>
+      <div class="pt-bar"><div class="pt-fill" style="width:${getProgressStats().pct}%"></div></div>
+      <div class="pt-stat">Avg score: <strong>${getProgressStats().avgScore}%</strong></div>
+      <div class="pt-stat">Section <strong>${state.currentSection+1}/${mod.sections.length}</strong></div>
     </div></div></div>
+    </div>
     <div class="container">
       <div class="section-nav" id="sec-nav"></div>
       <div class="fade-in">
@@ -1786,6 +1813,7 @@ function renderQuiz(app){
     const totalCorrect=mod.quiz.filter((_,i)=>state.quizAnswers[i]===mod.quiz[i].correct).length;
     const independent=mod.quiz.filter((_,i)=>state.quizAnswers[i]===mod.quiz[i].correct&&!state.helps[i]).length;
     const passed=independent/mod.quiz.length>=.8;
+    state.scores[mod.id]=Math.round(independent/mod.quiz.length*100);saveScores();
     if(passed&&!state.completed.includes(mod.id)){state.completed.push(mod.id);saveCompleted()}
     trackEvent({event:"quiz_complete",moduleId:mod.id,moduleName:mod.title,score:totalCorrect,independent,totalQuestions:mod.quiz.length,passed,hintsUsed,helpsUsed});
     app.innerHTML=`
@@ -1793,7 +1821,13 @@ function renderQuiz(app){
         <button class="btn-ghost" id="back-study">\u2190 Back to Study</button>
         <div class="title">Quiz: ${mod.title}</div>
         <div style="color:${C.amber};font-size:12px">${answered}/${mod.quiz.length} answered</div>
+      </div></div>
+      <div class="progress-tracker"><div class="container"><div class="inner">
+        <div class="pt-stat"><strong>${getProgressStats().done}/${getProgressStats().totalMods}</strong> done</div>
+        <div class="pt-bar"><div class="pt-fill" style="width:${getProgressStats().pct}%"></div></div>
+        <div class="pt-stat">Avg score: <strong>${getProgressStats().avgScore}%</strong></div>
       </div></div></div>
+      </div>
       <div class="container" style="padding-top:28px;padding-bottom:60px">
         <div class="quiz-result ${passed?"passed":"failed"}">
           <div style="font-size:48px;margin-bottom:8px">${passed?"\ud83c\udf89":"\ud83d\udcda"}</div>
@@ -1805,6 +1839,18 @@ function renderQuiz(app){
           <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap">
             ${!passed?`<button class="btn-teal" id="retry" style="padding:10px 20px;font-size:13px">Try Again</button><button class="pill" id="review" style="border-color:${C.teal};color:${C.teal};padding:10px 20px">Review Materials</button>`:(mod.id===12?`<button class="btn-teal" id="go-pulse" style="padding:12px 28px;font-size:15px;background:${C.amber};color:${C.soil}">Launch Vitagri \u2014 Pulse: Your Personalised Toolkit \u2192</button>`:`<button class="btn-teal" id="back-all" style="padding:10px 24px;font-size:14px">\u2190 Back to All Modules</button>`)}
           </div>
+          ${passed&&mod.id===12?`
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid ${C.lgrey}">
+            <div style="font-size:13px;font-weight:700;color:${C.soil};text-align:center;margin-bottom:12px">Share your achievement</div>
+            <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+              <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://predictive-model-learning.netlify.app&title=${encodeURIComponent("I have just discovered how data science will transform agriculture, for a healthier future")}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;background:#0A66C2;color:white;text-decoration:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600">LinkedIn</a>
+              <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent("I have just discovered how data science will transform agriculture, for a healthier future")}&url=https://predictive-model-learning.netlify.app" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;background:#000;color:white;text-decoration:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600">X</a>
+              <a href="https://www.facebook.com/sharer/sharer.php?u=https://predictive-model-learning.netlify.app&quote=${encodeURIComponent("I have just discovered how data science will transform agriculture, for a healthier future")}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;background:#1877F2;color:white;text-decoration:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600">Facebook</a>
+              <a href="https://www.instagram.com/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:white;text-decoration:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600">Instagram</a>
+              <a href="https://www.tiktok.com/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;background:#000;color:white;text-decoration:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600">TikTok</a>
+            </div>
+            <div style="font-size:10px;color:${C.grey};text-align:center;margin-top:8px">Tell the world you\u2019re part of the farming-for-health revolution</div>
+          </div>`:""}
         </div>
         <div id="quiz-review"></div>
       </div>`;
@@ -1839,7 +1885,13 @@ function renderQuiz(app){
         <button class="btn-ghost" id="back-study">\u2190 Back to Study</button>
         <div class="title">Quiz: ${mod.title}</div>
         <div style="color:${C.amber};font-size:12px">${answered}/${mod.quiz.length} answered</div>
+      </div></div>
+      <div class="progress-tracker"><div class="container"><div class="inner">
+        <div class="pt-stat"><strong>${getProgressStats().done}/${getProgressStats().totalMods}</strong> done</div>
+        <div class="pt-bar"><div class="pt-fill" style="width:${getProgressStats().pct}%"></div></div>
+        <div class="pt-stat">Avg score: <strong>${getProgressStats().avgScore}%</strong></div>
       </div></div></div>
+      </div>
       <div class="container" style="padding-top:28px;padding-bottom:60px"><div id="quiz-questions"></div>
         <div style="text-align:center;margin-top:20px">
           <button class="btn-teal" id="submit-quiz" style="padding:12px 32px;font-size:14px;opacity:${answered===mod.quiz.length?1:.5}" ${answered<mod.quiz.length?"disabled":""}>${mod.id===12?"Send your answers to confirm qualification":"Submit Quiz"}</button>
