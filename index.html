@@ -1309,17 +1309,17 @@ const modules=[
     {heading:"What Is Data and Why Does It Matter?",visual:"dataflow",
      analogy:"Think of data like ingredients in a recipe. The ingredients (farm measurements) go in, the recipe (model) processes them, and out comes the dish (prediction). Better ingredients = better dish.",
      body:"Everything in this course starts with food. The data analysis system is purely to enable efficient and affordable ways to help the farming and food industry measure and reward food production that is nutritionally enhancing. Using real, measurable information collected from farms. Data is not opinions or guesses. It is numbers written down in a structured way: the pH of a soil sample, the iron content of a wheat grain, and whether a farm uses cover crops or not. The goal of a predictive model is to reduce the costs of monitoring how to produce nutritious food. This cost reduction is the result of the industry working together with structured information and finding patterns in outcomes that can be efficiently replicated. The animation above shows the journey: farming practices are measured, samples are analysed in laboratories, the results are converted into numbers, and finally, a model uses those numbers to make a prediction about food nutrition. Our goal is for the farming industry to be rewarded for this nutrition."},
-    {heading:"Hands-on: Sort the Data Types",visual:"dragdrop",
+    {heading:"Hands-on: Sort the Data Types",visual:"dragdrop",bodyFirst:true,
      body:"Not all data is the same. Some measurements are numbers on a scale (like soil pH at 6.7), some are named categories (like tillage method: no-till, min-till, or conventional), and some are simple yes/no answers (like whether cover crops are used). Drag each measurement above into the correct box. Getting this right matters because the model treats each type differently \u2014 numbers can be added and averaged, but categories cannot."},
     {heading:"Reading Numbers \u2014 Averages, Ranges, and Patterns",visual:"dotplot",
      analogy:"Imagine measuring the height of 30 people in a room. Most would cluster around average height, with a few very tall and very short people at the edges. Farm iron content works the same way.",
      body:"When you have 30 measurements, you need to summarise them. The most important summary is the average (or mean) \u2014 add up all the values and divide by how many there are. The range tells you the gap between the smallest and largest values. Watch the animation above: as each farm\u2019s iron content appears on the number line, notice how most values cluster near the middle with fewer at the extremes. This pattern is the foundation of statistics."},
-    {heading:"Hands-on: Guess the Average",visual:"guessavg",
+    {heading:"Hands-on: Guess the Average",visual:"guessavg",bodyFirst:true,
      body:"Now it\u2019s your turn. You know 30 farms measured iron content from 3.1 to 6.5 mg/100g. Use the slider above to guess where the average falls, then lock in your answer to see how close you were. This exercise builds your intuition for what \u2018typical\u2019 looks like in a dataset \u2014 a skill that matters throughout this course."},
     {heading:"How Machines Learn \u2014 The Simplest Possible Explanation",visual:"guesscheck",
      analogy:"Learning to throw darts at a target. Your first throw misses by a lot. You adjust, throw again, miss by less. After many throws, you\u2019re hitting close to the centre. That\u2019s exactly how a machine learning model works.",
      body:"A machine learning model is not magic. It follows a simple loop: guess, check how wrong the guess was, adjust the guess to be less wrong, and repeat. The animation above shows this in action \u2014 the computer starts with a rough guess (8.0), discovers it\u2019s too high, adjusts downward, checks again, adjusts again, and gradually converges on the correct answer (4.8). This \u201cguess-check-adjust\u201d cycle \u2014 done millions of times across thousands of data points \u2014 is the core of every machine learning algorithm you will encounter in this course."},
-    {heading:"Hands-on: You Are the Model",visual:"youmodel",
+    {heading:"Hands-on: You Are the Model",visual:"youmodel",bodyFirst:true,
      body:"Time to put yourself in the model\u2019s shoes. You\u2019ll see 5 farms, each with a soil organic matter percentage. Your job is to guess the iron content based on that number alone. After each guess, you\u2019ll see the actual value AND what the trained model predicted. At the end, compare your total error to the model\u2019s. Don\u2019t worry about being accurate \u2014 the point is to feel what prediction is like, and to see how a model trained on hundreds of examples outperforms a human guessing from limited information."},
   ],quiz:[
     {q:"What is \u2018data\u2019 in the context of this course?",options:["Opinions from farmers about their land","Organised, structured measurements collected from farms","Social media posts about agriculture","Government policy documents"],correct:1,hint:"Data is factual and measurable \u2014 not opinions or stories.",explanation:"Data in this course means organised, structured measurements: numbers like soil pH, categories like tillage method, and binary facts like whether cover crops are used. It is collected systematically from farms and laboratories, not from opinions or anecdotes."},
@@ -1655,9 +1655,10 @@ function renderStudy(app){
       <div class="section-nav" id="sec-nav"></div>
       <div class="fade-in">
         <h2 class="section-heading">${sec.heading}</h2>
+        ${sec.bodyFirst?`<p class="section-body">${applyJargon(sec.body)}</p>`:""}
         <div id="visual-mount" style="margin:20px 0"></div>
         ${sec.analogy?`<div class="analogy-box">\ud83d\udca1 <strong>Real-world analogy:</strong> ${sec.analogy}</div>`:""}
-        <p class="section-body">${applyJargon(sec.body)}</p>
+        ${!sec.bodyFirst?`<p class="section-body">${applyJargon(sec.body)}</p>`:""}
         <div class="section-footer">
           ${state.currentSection>0?`<button class="pill" id="prev-sec" style="border-color:${C.teal};color:${C.teal};padding:8px 18px">\u2190 Previous</button>`:'<div></div>'}
           ${state.currentSection<mod.sections.length-1?`<button class="btn-teal" id="next-sec" style="padding:8px 20px">Next Section \u2192</button>`:`<button class="btn-amber" id="start-quiz">Start Quiz \u2192</button>`}
