@@ -68,7 +68,10 @@ exports.handler = async (event) => {
   }
 
   try {
-    let rawBody = event.body || '{}';
+    let rawBody = event.body;
+    if (!rawBody) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Empty body', method: event.httpMethod, hasBody: !!event.body, isB64: event.isBase64Encoded }) };
+    }
     if (event.isBase64Encoded) {
       rawBody = Buffer.from(rawBody, 'base64').toString('utf-8');
     }
