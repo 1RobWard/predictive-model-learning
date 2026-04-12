@@ -68,12 +68,12 @@ exports.handler = async (event) => {
   }
 
   try {
-    let rawBody = event.body;
-    if (!rawBody) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Empty body', method: event.httpMethod, hasBody: !!event.body, isB64: event.isBase64Encoded }) };
-    }
-    if (event.isBase64Encoded) {
+    let rawBody = event.body || '';
+    if (event.isBase64Encoded && rawBody) {
       rawBody = Buffer.from(rawBody, 'base64').toString('utf-8');
+    }
+    if (!rawBody || rawBody.length < 2) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Empty body', bodyLen: rawBody.length, isB64: event.isBase64Encoded, bodyPreview: rawBody.substring(0, 50) }) };
     }
     const { action, email, firstName, lastName, tags, mergeFields } = JSON.parse(rawBody);
     const subscriberHash = md5(email);
