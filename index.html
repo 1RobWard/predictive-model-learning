@@ -13,7 +13,7 @@
   --lime:#9FB04F;--amber:#e9a84c;--cream:#faf7f2;--parch:#f5f0e8;
   --white:#ffffff;--grey:#6b7280;--lgrey:#e5e7eb;--red:#e74c3c;
 }
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--cream);color:var(--soil);line-height:1.6;-webkit-font-smoothing:antialiased}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--cream);color:var(--soil);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 button{cursor:pointer;font-family:inherit;transition:all .2s}
 button:hover{filter:brightness(1.08)}
 .container{max-width:800px;margin:0 auto;padding:0 24px}
@@ -63,7 +63,7 @@ button:hover{filter:brightness(1.08)}
 
 /* Section Content */
 .section-heading{font-size:20px;font-weight:800;color:var(--soil);margin-bottom:8px;line-height:1.3}
-.section-body{font-size:14px;color:#374151;line-height:1.75;margin-bottom:20px}
+.section-body{font-size:14px;color:#374151;line-height:1.75;margin-bottom:20px;overflow-wrap:break-word;word-wrap:break-word}
 .section-footer{display:flex;justify-content:space-between;gap:10px;margin-bottom:40px}
 
 /* Visual Components */
@@ -88,7 +88,7 @@ button:hover{filter:brightness(1.08)}
 .quiz-question{background:var(--white);border-radius:10px;padding:18px;margin-bottom:12px;border:1px solid var(--lgrey)}
 .quiz-question.correct{border-color:var(--teal);border-left:4px solid var(--teal)}
 .quiz-question.wrong{border-color:var(--berry);border-left:4px solid var(--berry)}
-.quiz-q{font-weight:700;font-size:13px;line-height:1.4;margin-bottom:12px}
+.quiz-q{font-weight:700;font-size:13px;line-height:1.4;margin-bottom:12px;overflow-wrap:break-word;word-wrap:break-word}
 .quiz-opt{display:block;width:100%;text-align:left;background:var(--cream);border:2px solid transparent;border-radius:8px;padding:10px 14px;margin-bottom:6px;font-size:12px;color:var(--soil);transition:all .15s}
 .quiz-opt:hover{border-color:var(--teal);background:rgba(42,157,143,.06)}
 .quiz-opt.selected{border-color:var(--teal);background:rgba(42,157,143,.1);font-weight:600}
@@ -125,8 +125,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .hint-help-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .btn-hint{background:transparent;border:1px solid var(--amber);color:var(--amber);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600}
 .btn-help{background:transparent;border:1px solid var(--berry);color:var(--berry);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600}
-.hint-box{background:#fff8e8;border:1px solid var(--amber);border-radius:6px;padding:10px 12px;margin-top:8px;font-size:12px;color:#8B6914;line-height:1.5}
-.help-box{background:rgba(139,39,131,.06);border:1px solid var(--berry);border-radius:6px;padding:10px 12px;margin-top:8px;font-size:12px;color:#6b1a64;line-height:1.5}
+.hint-box{background:#fff8e8;border:1px solid var(--amber);border-radius:6px;padding:10px 12px;margin-top:8px;font-size:12px;color:#8B6914;line-height:1.5;overflow-wrap:break-word}
+.help-box{background:rgba(139,39,131,.06);border:1px solid var(--berry);border-radius:6px;padding:10px 12px;margin-top:8px;font-size:12px;color:#6b1a64;line-height:1.5;overflow-wrap:break-word}
 .help-tag{display:inline-block;background:var(--berry);color:var(--white);font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;margin-left:6px;vertical-align:middle}
 
 /* Jargon Buster */
@@ -137,7 +137,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .jargon-term{color:var(--amber);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block}
 
 /* Analogy Box */
-.analogy-box{background:#fff8e8;border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:20px;font-size:13px;color:#6b5a2e;line-height:1.6}
+.analogy-box{background:#fff8e8;border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:20px;font-size:13px;color:#6b5a2e;line-height:1.6;overflow-wrap:break-word}
 .analogy-box strong{color:#8B6914}
 
 /* Drag and Drop */
@@ -233,6 +233,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   .role-card{padding:10px}
   .data-table{font-size:11px}
   .data-table th,.data-table td{padding:6px 8px}
+  .pulse-fab-label{display:none !important}
   .container{padding:0 16px}
   .module-card{padding:16px}
   .login-card{padding:28px 24px}
