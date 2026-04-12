@@ -209,15 +209,35 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   .drag-source{gap:6px}
   .drag-item{padding:6px 10px;font-size:11px}
   .drag-zone{min-height:50px;padding:8px}
+  .drag-zones-grid{grid-template-columns:1fr !important}
   .intro-hero{font-size:28px}
   .site-header .logo-text h1{font-size:16px}
+  .site-header .subtitle{font-size:12px}
+  .study-header{padding:10px 0}
+  .study-header .inner{gap:6px}
   .study-header .title{font-size:11px}
+  .btn-ghost{padding:5px 10px;font-size:11px}
+  .btn-teal{padding:5px 12px;font-size:11px}
   .section-nav{gap:6px}
   .section-btn{padding:4px 10px;font-size:11px}
+  .section-heading{font-size:18px}
+  .section-body{font-size:13px}
   .quiz-q{font-size:12px}
   .quiz-opt{padding:8px 12px;font-size:11px}
   .analogy-box{font-size:12px;padding:10px 12px}
-  .jargon-popup{width:220px;font-size:11px}
+  .jargon-popup{width:220px;font-size:11px;left:0;transform:none}
+  .visual-box{padding:14px}
+  .grid-2{gap:8px}
+  .wheel-grid{grid-template-columns:repeat(2,1fr) !important;gap:6px}
+  .role-grid{grid-template-columns:1fr !important}
+  .role-card{padding:10px}
+  .data-table{font-size:11px}
+  .data-table th,.data-table td{padding:6px 8px}
+  .container{padding:0 16px}
+  .module-card{padding:16px}
+  .login-card{padding:28px 24px}
+  .quiz-result{padding:20px}
+  .quiz-score{font-size:36px}
 }
 
 /* Fixed Pulse Widget */
@@ -998,7 +1018,7 @@ function renderDragDrop(el){
       <div class="drag-source" id="drag-src">
         ${unplaced.map((item,j)=>{const idx=items.indexOf(item);return`<div class="drag-item" draggable="true" data-idx="${idx}" data-type="${item.type}">${item.text}</div>`}).join("")}
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      <div class="drag-zones-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
         ${zones.map(z=>`
           <div>
             <div class="drag-zone-label" style="color:${z.col}">${z.label}</div>
@@ -1193,7 +1213,7 @@ function renderYouAreTheModel(el){
       <input type="range" min="20" max="80" step="1" value="${Math.round(userGuess*10)}" ${locked?"disabled":""} id="ym-slider" style="margin-bottom:10px;accent-color:${C.teal}">
       ${!locked?`<div style="text-align:center"><button id="ym-lock" style="background:${C.teal};color:${C.white};border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700">Submit Guess</button></div>`:""}
       ${locked?`
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">
+        <div class="grid-2" style="grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">
           <div style="background:${C.teal}10;border-radius:6px;padding:10px;text-align:center"><div style="font-size:10px;color:${C.grey}">YOUR GUESS</div><div style="font-size:20px;font-weight:800;color:${C.teal}">${userGuess.toFixed(1)}</div></div>
           <div style="background:${C.lime}10;border-radius:6px;padding:10px;text-align:center"><div style="font-size:10px;color:${C.grey}">ACTUAL</div><div style="font-size:20px;font-weight:800;color:${C.lime}">${farm.actual}</div></div>
           <div style="background:${C.amber}10;border-radius:6px;padding:10px;text-align:center"><div style="font-size:10px;color:${C.grey}">MODEL</div><div style="font-size:20px;font-weight:800;color:${C.amber}">${farm.model}</div></div>
