@@ -1741,6 +1741,7 @@ function renderLogin(app){
     state.user={firstName:first.value.trim(),lastName:last.value.trim(),email:email.value.trim()};
     localStorage.setItem('vpm_user',JSON.stringify(state.user));
     trackEvent({event:"login"});
+    fetch('/.netlify/functions/mailchimp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'register',email:state.user.email,firstName:state.user.firstName,lastName:state.user.lastName})}).catch(()=>{});
     state.view="home";render();
   });
 }
@@ -1846,7 +1847,17 @@ function renderQuiz(app){
     const independent=mod.quiz.filter((_,i)=>state.quizAnswers[i]===mod.quiz[i].correct&&!state.helps[i]).length;
     const passed=independent/mod.quiz.length>=.8;
     state.scores[mod.id]=Math.round(independent/mod.quiz.length*100);saveScores();
-    if(passed&&!state.completed.includes(mod.id)){state.completed.push(mod.id);saveCompleted()}
+    if(passed&&!state.completed.includes(mod.id)){
+      state.completed.push(mod.id);saveCompleted();
+      if(state.user&&state.user.email){
+        const done=state.completed.length;const total=modules.length;
+        if(done>=total){
+          fetch('/.netlify/functions/mailchimp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'qualified',email:state.user.email,mergeFields:{PROGRESS:done+'/'+total}})}).catch(()=>{});
+        }else{
+          fetch('/.netlify/functions/mailchimp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'progress',email:state.user.email,tags:['completed_'+done+'_of_'+total],mergeFields:{PROGRESS:done+'/'+total}})}).catch(()=>{});
+        }
+      }
+    }
     trackEvent({event:"quiz_complete",moduleId:mod.id,moduleName:mod.title,score:totalCorrect,independent,totalQuestions:mod.quiz.length,passed,hintsUsed,helpsUsed});
     app.innerHTML=`
       <div class="study-header"><div class="container"><div class="inner">
