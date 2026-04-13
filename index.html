@@ -462,20 +462,33 @@ function saveCompleted(){localStorage.setItem('vpm_completed',JSON.stringify(sta
 function saveScores(){localStorage.setItem('vpm_scores',JSON.stringify(state.scores))}
 function savePoints(){localStorage.setItem('vpm_points',String(state.points))}
 function saveTimer(){if(state.startTime)localStorage.setItem('vpm_startTime',state.startTime);if(state.endTime)localStorage.setItem('vpm_endTime',state.endTime)}
+// Timer tracks accumulated seconds + current session elapsed
+// When user returns, accumulated seconds are loaded from localStorage
+// Current session start is set on page load (if logged in and not completed)
+function initSessionTimer(){
+  if(state.user&&state.startTime&&!state.endTime){
+    state._sessionStart=Date.now();
+  }
+}
+function getElapsedSeconds(){
+  const accumulated=parseInt(localStorage.getItem('vpm_accumulatedSeconds')||'0');
+  if(!state.startTime||state.endTime)return accumulated;
+  if(!state._sessionStart)return accumulated;
+  const sessionSecs=Math.floor((Date.now()-state._sessionStart)/1000);
+  return accumulated+sessionSecs;
+}
 function getElapsedTime(){
-  if(!state.startTime)return"00:00:00";
-  const end=state.endTime?new Date(state.endTime):new Date();
-  const diff=Math.max(0,Math.floor((end-new Date(state.startTime))/1000));
+  const diff=getElapsedSeconds();
   const h=String(Math.floor(diff/3600)).padStart(2,'0');
   const m=String(Math.floor((diff%3600)/60)).padStart(2,'0');
   const s=String(diff%60).padStart(2,'0');
   return h+':'+m+':'+s;
 }
-function getElapsedSeconds(){
-  if(!state.startTime)return 0;
-  const end=state.endTime?new Date(state.endTime):new Date();
-  return Math.max(0,Math.floor((end-new Date(state.startTime))/1000));
+function saveAccumulatedTime(){
+  localStorage.setItem('vpm_accumulatedSeconds',String(getElapsedSeconds()));
 }
+// Save accumulated time when page unloads (user closes tab/navigates away)
+window.addEventListener('beforeunload',saveAccumulatedTime);
 function calcModulePoints(mod){
   const correct=mod.quiz.filter((_,i)=>state.quizAnswers[i]===mod.quiz[i].correct).length;
   const hintsUsed=Object.keys(state.hints).length;
@@ -1787,7 +1800,7 @@ function renderIntro(app){
       <div class="intro-stats">
         <div class="intro-stat" style="animation:countUp .6s ease .2s both"><div class="num" style="color:${C.teal}" id="count-1">0\u00d7</div><div class="label">Antioxidant variation within the same crop type</div></div>
         <div class="intro-stat" style="animation:countUp .6s ease .4s both"><div class="num" style="color:${C.amber}" id="count-2">\u00a30bn</div><div class="label">Annual cost of diet-related disease in the UK</div></div>
-        <div class="intro-stat" style="animation:countUp .6s ease .6s both"><div class="num" style="color:${C.berry}" id="count-3">0%</div><div class="label">Lower cancer risk linked to higher phytochemical intake</div></div>
+        <div class="intro-stat" style="animation:countUp .6s ease .6s both"><div class="num" style="color:${C.berry}" id="count-3">0%</div><div class="label">More omega-3 in pasture-fed meat</div></div>
       </div>
       <p class="intro-sub" style="font-size:clamp(13px,2vw,15px);margin-bottom:28px">This learning system will take you from the foundations of data science through to the cutting edge of predictive agriculture \u2014 <strong>12 interactive modules</strong> with hands-on exercises, quizzes, and an AI-powered toolkit to build your personalised action plan.</p>
       <button class="intro-cta" id="intro-start">Let\u2019s change agriculture for good \u2192</button>
@@ -1814,7 +1827,7 @@ function renderIntro(app){
   }
   animateCount('count-1',200,'','\u00d7',2000,400);
   animateCount('count-2',268,'\u00a3','bn',2200,700);
-  animateCount('count-3',60,'','%',1800,1000);
+  animateCount('count-3',47,'','%',1800,1000);
 }
 
 function renderLogin(app){
@@ -1841,7 +1854,7 @@ function renderLogin(app){
   btn.addEventListener('click',()=>{
     state.user={firstName:first.value.trim(),lastName:last.value.trim(),email:email.value.trim(),org:org.value.trim()};
     localStorage.setItem('vpm_user',JSON.stringify(state.user));
-    state.startTime=new Date().toISOString();state.endTime=null;state.points=0;saveTimer();savePoints();
+    state.startTime=new Date().toISOString();state.endTime=null;state.points=0;state._sessionStart=Date.now();localStorage.setItem('vpm_accumulatedSeconds','0');saveTimer();savePoints();
     trackEvent({event:"login"});
     fetch('/.netlify/functions/mailchimp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'register',email:state.user.email,firstName:state.user.firstName,lastName:state.user.lastName})}).catch(()=>{});
     state.view="home";render();
@@ -1867,7 +1880,8 @@ function renderHome(app){
   document.getElementById('logout')?.addEventListener('click',e=>{e.preventDefault();localStorage.removeItem('vpm_user');state.user=null;state.view="login";render()});
   document.getElementById('restart-course')?.addEventListener('click',()=>{
     if(confirm('Restart the course? Your best score is saved on the leaderboard. This resets your progress to try for a better score and time.')){
-      state.completed=[];state.scores={};state.points=0;state.startTime=new Date().toISOString();state.endTime=null;
+      state.completed=[];state.scores={};state.points=0;state.startTime=new Date().toISOString();state.endTime=null;state._sessionStart=Date.now();
+      localStorage.setItem('vpm_accumulatedSeconds','0');
       saveCompleted();saveScores();savePoints();saveTimer();
       localStorage.removeItem('vpm_endTime');render();
     }
@@ -1965,7 +1979,7 @@ function renderQuiz(app){
     }
     if(passed&&!state.completed.includes(mod.id)){
       state.completed.push(mod.id);saveCompleted();
-      if(state.completed.length>=modules.length){state.endTime=new Date().toISOString();saveTimer();
+      if(state.completed.length>=modules.length){saveAccumulatedTime();state.endTime=new Date().toISOString();saveTimer();
         if(state.points>state.bestPoints||(state.points===state.bestPoints&&getElapsedSeconds()<(state.bestTime?parseInt(state.bestTime):Infinity))){
           state.bestPoints=state.points;state.bestTime=String(getElapsedSeconds());
           localStorage.setItem('vpm_bestPoints',String(state.bestPoints));localStorage.setItem('vpm_bestTime',state.bestTime);
@@ -2110,6 +2124,7 @@ function renderQuiz(app){
 
 // ─── BOOT ──────────────────────────────────────────────────────
 render();
+initSessionTimer();
 
 // ─── GLOBAL PULSE FLOATING WIDGET ─────────────────────────────
 (function(){
