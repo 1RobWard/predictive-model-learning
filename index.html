@@ -350,7 +350,14 @@ const glossary={
   "pre-registration":"Publicly declaring your research hypotheses and methods before collecting data, to prevent unconscious bias.",
   "biomarker":"A measurable biological indicator \u2014 a substance or characteristic that signals a specific condition or process.",
   "mean":"The average \u2014 add up all the values and divide by how many there are.",
-  "range":"The gap between the smallest and largest values in a dataset."
+  "range":"The gap between the smallest and largest values in a dataset.",
+  "Random Forest":"An ensemble method that builds hundreds of independent decision trees, each on random subsets of data, and averages their predictions. More stable than a single tree.",
+  "PLSR":"Partial Least Squares Regression \u2014 a technique that finds components maximising both input variation and prediction of the outcome. Essential for metabolomics data.",
+  "ridge meta-learner":"A simple linear model with L2 regularisation that learns the optimal weighting of multiple base models\u2019 predictions in a stacked ensemble.",
+  "stacked ensemble":"An architecture where multiple different models (e.g. GLMM, XGBoost, Random Forest) each make predictions, and a meta-learner combines them optimally.",
+  "isotonic regression":"A non-parametric calibration method that maps raw model scores to observed frequencies, ensuring probability outputs are honest.",
+  "Brier Score":"A measure of calibration quality \u2014 the mean squared difference between predicted probabilities and actual outcomes. Below 0.15 is well-calibrated.",
+  "calibrated confidence interval":"A probability range around a prediction that has been corrected (calibrated) so the stated confidence level matches the true accuracy."
 };
 
 // Sort glossary terms longest-first to prevent partial matches
