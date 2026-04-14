@@ -1886,7 +1886,7 @@ function renderHome(app){
   app.innerHTML=`
     <div class="site-header"><div class="container">
       <div class="logo"><div class="logo-icon">\ud83c\udf31</div><div class="logo-text"><h1>Vitagri & Bionutrient Institute</h1><p>Predictive Model Learning System</p></div></div>
-      ${state.user?`<div style="margin-bottom:10px"><div class="user-badge">\ud83d\udc64 ${state.user.firstName}<a href="#" id="logout">Log out</a></div></div>`:""}
+      ${state.user?`<div style="margin-bottom:10px;display:flex;justify-content:flex-end"><div class="user-badge" style="background:rgba(255,255,255,.15);padding:6px 12px">\ud83d\udc64 ${state.user.firstName} <a href="#" id="logout" style="color:${C.amber};margin-left:8px">Log out</a></div></div>`:""}
       <div class="subtitle" style="margin-bottom:24px">12 modules from basic foundations to smartie-pants \u2014 complete each quiz at 80%+ to unlock the next level</div>
       <div class="progress-box">
         <div class="progress-row"><span class="progress-label">Overall Progress</span><span class="progress-count">${state.completed.length}/${modules.length} modules</span></div>
