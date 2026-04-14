@@ -514,11 +514,12 @@ const encouragements=["Nice one!","You\u2019ve got this!","Excellent!","Spot on!
 function progressTrackerHTML(showSection,mod){
   const s=getProgressStats();
   return`<div class="progress-tracker"><div class="container"><div class="inner">
-    <div class="pt-stat"><strong>${s.done}/${s.totalMods}</strong> done</div>
+    ${state.user?`<div class="pt-stat" style="color:rgba(255,255,255,.9)">\ud83d\udc64 ${state.user.firstName}</div>`:""}
+    <div class="pt-stat"><strong>${s.done}/${s.totalMods}</strong></div>
     <div class="pt-bar"><div class="pt-fill" style="width:${s.pct}%"></div></div>
-    <div class="pt-points">\u2b50 ${state.points} pts</div>
+    <div class="pt-points">\u2b50 ${state.points}</div>
     <div class="pt-timer" id="timer-display">\u23f1 ${getElapsedTime()}</div>
-    ${showSection&&mod?`<div class="pt-stat">Section <strong>${state.currentSection+1}/${mod.sections.length}</strong></div>`:""}
+    ${showSection&&mod?`<div class="pt-stat"><strong>${state.currentSection+1}/${mod.sections.length}</strong></div>`:""}
   </div></div></div>`;
 }
 // Timer update interval
